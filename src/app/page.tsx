@@ -51,7 +51,7 @@ const DEFAULT_TOURNAMENTS: Tournament[] = [
 export default function Home() {
   // Views navigation
   const [currentView, setCurrentView] = useState<"home" | "play" | "staking" | "profile" | "game">("home");
-  const [playTab, setPlayTab] = useState<"free" | "tournament">("free");
+  const [playTab, setPlayTab] = useState<"free" | "tournament" | "cashbet">("free");
 
   // Wallet and Staking State
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -67,6 +67,15 @@ export default function Home() {
   // Staking input fields
   const [stakeAmount, setStakeAmount] = useState<string>("");
   const [unstakeAmount, setUnstakeAmount] = useState<string>("");
+
+  // Cash Bet state
+  const [cashBetAmount, setCashBetAmount] = useState<string>("0.1");
+  const [cashBetMode, setCashBetMode] = useState<"solo" | "duo" | "4player">("solo");
+  const [cashBetLoading, setCashBetLoading] = useState<boolean>(false);
+  const [activeGameId, setActiveGameId] = useState<string | null>(null);
+  const [activeOnChainGameId, setActiveOnChainGameId] = useState<number | null>(null);
+  const [activeBetAmount, setActiveBetAmount] = useState<string>("0");
+  const [activeBetMode, setActiveBetMode] = useState<string>("free");
 
   // Game setup configurations
   const [activePlayerCount, setActivePlayerCount] = useState<number>(4);
@@ -92,6 +101,33 @@ export default function Home() {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const gameRef = useRef<LudoGame | null>(null);
+
+  // Sync user profile from Supabase
+  const fetchUserProfile = async (addr: string) => {
+    try {
+      const res = await fetch(`/api/user?wallet=${encodeURIComponent(addr)}`);
+      if (!res.ok) return;
+      const user = await res.json();
+      setPoints(user.points ?? 0);
+      setStakedBalance(parseFloat(user.staked_balance ?? "0"));
+      setEarnedYield(parseFloat(user.earned_yield ?? "0"));
+      setGamesPlayed(user.games_played ?? 0);
+      setWins(user.wins ?? 0);
+    } catch {
+      // Supabase not configured — leave defaults
+    }
+  };
+
+  // Sync staked_balance to DB
+  const syncStakedBalance = async (addr: string, balance: number) => {
+    try {
+      await fetch("/api/user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet: addr, staked_balance: balance }),
+      });
+    } catch { /* offline / not configured */ }
+  };
 
   // Calculate Staking Tier & Boost
   const getTierData = (pts: number) => {
@@ -141,6 +177,7 @@ export default function Home() {
         setWalletAddress(addr);
         setIsConnected(true);
         showToast("Wallet connected!", "success");
+        fetchUserProfile(addr);
 
         try {
           await (window as any).ethereum.request({
@@ -176,6 +213,20 @@ export default function Home() {
     const mockAddr = "0x" + Array.from({ length: 40 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
     setWalletAddress(mockAddr);
     setIsConnected(true);
+    showToast("Connected (Demo Mode)", "success");
+    // Try to load from Supabase; set demo defaults only if that fails
+    try {
+      const res = await fetch(`/api/user?wallet=${mockAddr}`);
+      if (res.ok) {
+        const user = await res.json();
+        setPoints(user.points ?? 350);
+        setStakedBalance(parseFloat(user.staked_balance ?? "125.5"));
+        setEarnedYield(parseFloat(user.earned_yield ?? "2.34"));
+        setGamesPlayed(user.games_played ?? 12);
+        setWins(user.wins ?? 5);
+        return;
+      }
+    } catch { /* offline */ }
     setPoints(350);
     setStakedBalance(125.50);
     setEarnedYield(2.34);
@@ -185,7 +236,77 @@ export default function Home() {
       { mode: "free", players: 2, won: true, points: 15, date: new Date(Date.now() - 3600000) },
       { mode: "tournament", players: 4, won: false, points: 20, date: new Date(Date.now() - 7200000) }
     ]);
-    showToast("Connected (Demo Mode)", "success");
+  };
+
+  // Cash Bet: join lobby → approve ERC-20 → depositBet → launch game
+  const joinCashBetRoom = async () => {
+    if (!isConnected || !walletAddress) {
+      showToast("Connect your wallet first!", "error");
+      return;
+    }
+    setCashBetLoading(true);
+    const numPlayers = cashBetMode === "solo" ? 2 : 4;
+    const escrowAddress = process.env.NEXT_PUBLIC_ESCROW_CONTRACT_ADDRESS;
+    const tokenAddress = process.env.NEXT_PUBLIC_USDM_ADDRESS ?? "0x765DE816845861e75A25fCA122bb6898B8B1282a";
+
+    try {
+      // Step 1: Register game in backend
+      showToast("Creating lobby…", "info");
+      const gameRes = await fetch("/api/game", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          wallet: walletAddress,
+          mode: cashBetMode,
+          bet_amount: cashBetAmount,
+          token_address: tokenAddress,
+          num_players: numPlayers,
+        }),
+      });
+      if (!gameRes.ok) throw new Error((await gameRes.json()).error ?? "Lobby creation failed");
+      const game = await gameRes.json();
+      setActiveGameId(game.id);
+      setActiveOnChainGameId(game.on_chain_game_id);
+      setActiveBetAmount(cashBetAmount);
+      setActiveBetMode(cashBetMode);
+
+      if (escrowAddress && (window as any).ethereum) {
+        const { BrowserProvider, parseUnits, Contract } = await import("ethers");
+        const provider = new BrowserProvider((window as any).ethereum);
+        const signer = await provider.getSigner();
+
+        // Step 2: ERC-20 approve
+        showToast("Approving token spend…", "info");
+        const erc20Abi = [
+          "function approve(address spender, uint256 amount) returns (bool)",
+        ];
+        const token = new Contract(tokenAddress, erc20Abi, signer);
+        const approveTx = await token.approve(escrowAddress, parseUnits(cashBetAmount, 18));
+        await approveTx.wait();
+
+        // Step 3: depositBet
+        showToast("Depositing bet…", "info");
+        const escrowAbi = ["function depositBet(uint256 gameId) external"];
+        const escrow = new Contract(escrowAddress, escrowAbi, signer);
+        const depositTx = await escrow.depositBet(game.on_chain_game_id);
+        await depositTx.wait();
+      }
+
+      // Step 4: Mark joined in backend + launch
+      await fetch("/api/game/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ game_id: game.id, wallet: walletAddress }),
+      });
+
+      showToast("Bet placed! Launching game…", "success");
+      startGame(numPlayers, "free");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      showToast(msg, "error");
+    } finally {
+      setCashBetLoading(false);
+    }
   };
 
   // Start Ludo Game
@@ -238,9 +359,11 @@ export default function Home() {
       showToast("Enter a valid amount", "error");
       return;
     }
-    setStakedBalance((prev) => prev + amt);
+    const newBalance = stakedBalance + amt;
+    setStakedBalance(newBalance);
     setStakeAmount("");
     showToast(`Staked ${amt.toFixed(2)} cUSD successfully!`, "success");
+    if (walletAddress) syncStakedBalance(walletAddress, newBalance);
   };
 
   const handleUnstake = () => {
@@ -253,9 +376,11 @@ export default function Home() {
       showToast("Invalid amount", "error");
       return;
     }
-    setStakedBalance((prev) => prev - amt);
+    const newBalance = stakedBalance - amt;
+    setStakedBalance(newBalance);
     setUnstakeAmount("");
     showToast(`Unstaked ${amt.toFixed(2)} cUSD`, "info");
+    if (walletAddress) syncStakedBalance(walletAddress, newBalance);
   };
 
   // auto connect wallet on MiniPay
@@ -343,6 +468,34 @@ export default function Home() {
         setGameOverWon(isHuman);
         setGameOverPoints(totalPts);
         setIsGameOverModalOpen(true);
+
+        // Settle via backend (updates Supabase stats + triggers on-chain payout for cash bets)
+        const gId = activeGameId;
+        const addr = walletAddress;
+        if (gId && addr) {
+          const winnersArr = isHuman ? [addr] : [];
+          fetch("/api/game/settle", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ game_id: gId, winners: winnersArr }),
+          }).catch(() => { /* best-effort */ });
+        } else if (addr) {
+          // Free game: just sync points to DB
+          fetch("/api/user", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              wallet: addr,
+              points: (points ?? 0) + totalPts,
+              games_played: (gamesPlayed ?? 0) + 1,
+              wins: (wins ?? 0) + (isHuman ? 1 : 0),
+            }),
+          }).catch(() => { /* best-effort */ });
+        }
+
+        // Reset active game refs
+        setActiveGameId(null);
+        setActiveOnChainGameId(null);
       },
     };
 
@@ -549,6 +702,12 @@ export default function Home() {
               >
                 🏆 Tournaments
               </button>
+              <button
+                className={`room-tab ${playTab === "cashbet" ? "active" : ""}`}
+                onClick={() => setPlayTab("cashbet")}
+              >
+                💸 Cash Bet
+              </button>
             </div>
 
             {/* Free Rooms */}
@@ -604,6 +763,82 @@ export default function Home() {
                     <button className="btn btn-primary btn-block">Join Free</button>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Cash Bet Rooms */}
+            <div className={`room-panel ${playTab === "cashbet" ? "active" : ""}`} id="panel-cashbet">
+              <div className="cashbet-card">
+                <div className="cashbet-header">
+                  <span className="cashbet-icon">💸</span>
+                  <h3>Cash Bet Room</h3>
+                  <p>Put USDm on the line. Winner takes the pool minus a 5% treasury fee. Powered by on-chain escrow.</p>
+                </div>
+
+                <div className="cashbet-section">
+                  <label className="cashbet-label">Choose Mode</label>
+                  <div className="cashbet-mode-grid">
+                    {([
+                      { key: "solo", label: "1v1 Solo", icon: "👤👤", players: "2 players", desc: "Winner takes all" },
+                      { key: "duo", label: "2v2 Duo", icon: "👥👥", players: "4 players", desc: "Team split reward" },
+                      { key: "4player", label: "4-Player FFA", icon: "👤👤👤👤", players: "4 players", desc: "Sole winner takes all" },
+                    ] as const).map(({ key, label, icon, players, desc }) => (
+                      <div
+                        key={key}
+                        className={`cashbet-mode-card ${cashBetMode === key ? "selected" : ""}`}
+                        onClick={() => setCashBetMode(key)}
+                      >
+                        <div className="cbm-icon">{icon}</div>
+                        <div className="cbm-name">{label}</div>
+                        <div className="cbm-players">{players}</div>
+                        <div className="cbm-desc">{desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="cashbet-section">
+                  <label className="cashbet-label">Bet Amount (USDm per player)</label>
+                  <div className="cashbet-amounts">
+                    {["0.1", "0.5", "1.0", "5.0"].map((amt) => (
+                      <button
+                        key={amt}
+                        className={`cashbet-amt-btn ${cashBetAmount === amt ? "selected" : ""}`}
+                        onClick={() => setCashBetAmount(amt)}
+                      >
+                        ${amt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="cashbet-summary">
+                  <div className="cbs-row">
+                    <span>Your bet</span>
+                    <strong>${cashBetAmount} USDm</strong>
+                  </div>
+                  <div className="cbs-row">
+                    <span>Total pool</span>
+                    <strong>${(parseFloat(cashBetAmount) * (cashBetMode === "solo" ? 2 : 4)).toFixed(2)} USDm</strong>
+                  </div>
+                  <div className="cbs-row muted">
+                    <span>Treasury fee (5%)</span>
+                    <span>-${(parseFloat(cashBetAmount) * (cashBetMode === "solo" ? 2 : 4) * 0.05).toFixed(3)} USDm</span>
+                  </div>
+                  <div className="cbs-row highlight">
+                    <span>Max payout</span>
+                    <strong className="neon-green">${(parseFloat(cashBetAmount) * (cashBetMode === "solo" ? 2 : cashBetMode === "duo" ? 2 : 4) * 0.95).toFixed(3)} USDm</strong>
+                  </div>
+                </div>
+
+                <button
+                  className="btn btn-primary btn-block cashbet-play-btn"
+                  onClick={joinCashBetRoom}
+                  disabled={cashBetLoading || !isConnected}
+                >
+                  {cashBetLoading ? "⏳ Processing..." : isConnected ? `🎲 Place Bet & Play` : "Connect Wallet First"}
+                </button>
+                <p className="cashbet-note">Funds held by on-chain escrow. Admin wallet settles winner automatically.</p>
               </div>
             </div>
           </div>
