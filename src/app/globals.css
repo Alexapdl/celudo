@@ -1776,3 +1776,331 @@ a {
     opacity: 0;
   }
 }
+
+/* ========================================================
+   CASH BET ROOM
+   ======================================================== */
+
+.cashbet-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--r2);
+  padding: 20px;
+  max-width: 520px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.cashbet-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ffd700, #35d07f, #b388ff);
+}
+
+.cashbet-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.cashbet-icon {
+  font-size: 2.2rem;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.cashbet-header h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--gold);
+}
+
+.cashbet-header p {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.cashbet-section {
+  margin-bottom: 18px;
+}
+
+.cashbet-label {
+  display: block;
+  font-size: 0.72rem;
+  font-family: var(--pixel);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.cashbet-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.cashbet-mode-card {
+  border: 2px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  background: rgba(255,255,255,0.03);
+}
+
+.cashbet-mode-card:hover {
+  transform: scale(1.03);
+  border-color: var(--green);
+}
+
+.cashbet-mode-card.selected {
+  border-color: var(--green);
+  background: rgba(53, 208, 127, 0.1);
+  box-shadow: 0 0 12px rgba(53, 208, 127, 0.2);
+}
+
+.cbm-icon { font-size: 1.1rem; margin-bottom: 4px; }
+.cbm-name { font-size: 0.78rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.cbm-players { font-size: 0.68rem; color: var(--muted); }
+.cbm-desc { font-size: 0.65rem; color: var(--muted); margin-top: 3px; }
+
+.cashbet-amounts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cashbet-amt-btn {
+  flex: 1;
+  min-width: 60px;
+  padding: 10px 6px;
+  border: 2px solid var(--border);
+  border-radius: var(--r);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+
+.cashbet-amt-btn:hover { transform: scale(1.05); border-color: var(--gold); }
+.cashbet-amt-btn.selected {
+  border-color: var(--gold);
+  background: rgba(255, 215, 0, 0.1);
+  color: var(--gold);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+}
+
+.cashbet-summary {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.cbs-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  padding: 4px 0;
+  color: var(--text);
+}
+
+.cbs-row.muted { color: var(--muted); font-size: 0.76rem; }
+.cbs-row.highlight { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; font-weight: 700; font-size: 0.9rem; }
+
+.neon-green { color: var(--green); }
+
+.cashbet-play-btn {
+  font-size: 1rem;
+  padding: 14px;
+  border-radius: var(--r);
+  letter-spacing: 0.04em;
+}
+
+.cashbet-note {
+  text-align: center;
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 10px;
+  line-height: 1.4;
+}
+
+/* ========================================================
+   MOBILE-FIRST: 360×640 (MiniPay WebView)
+   All screens — ensure zero overflow
+   ======================================================== */
+
+/* Fixed header height matches game-layout calc */
+.app-header { height: 52px; }
+.game-layout { height: calc(100dvh - 52px); }
+
+@media (max-width: 480px) {
+  .container { padding: 0 12px; }
+
+  /* Header */
+  .app-header { height: 52px; }
+  .header-inner { padding: 0 12px; height: 52px; }
+  .logo-text { font-size: 0.9rem; }
+  .wallet-text { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Nav */
+  .nav-label { font-size: 0.58rem; }
+  .nav-icon { font-size: 1rem; }
+
+  /* Hero */
+  .hero-title { font-size: 1.6rem; line-height: 1.25; }
+  .hero-sub { font-size: 0.78rem; }
+  .hero-btns { flex-direction: column; gap: 8px; }
+  .hero-btns .btn { width: 100%; }
+  .hero-compact { padding: 20px 0 12px; }
+
+  /* Stats row */
+  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .stat-card { padding: 12px 8px; }
+  .stat-val { font-size: 1.1rem; }
+  .stat-lbl { font-size: 0.62rem; }
+
+  /* Steps */
+  .steps-row { flex-direction: column; gap: 10px; }
+  .step-arrow { transform: rotate(90deg); }
+  .step { padding: 14px; }
+
+  /* Room cards */
+  .room-grid { grid-template-columns: 1fr; gap: 10px; }
+  .room-card { padding: 16px; }
+  .room-tabs { gap: 4px; }
+  .room-tab { font-size: 0.72rem; padding: 8px 10px; }
+
+  /* Cash Bet */
+  .cashbet-card { padding: 14px; }
+  .cashbet-mode-grid { grid-template-columns: 1fr; gap: 8px; }
+  .cashbet-amounts { gap: 6px; }
+  .cashbet-amt-btn { min-width: 52px; font-size: 0.82rem; padding: 9px 4px; }
+
+  /* Game */
+  .game-layout {
+    flex-direction: column;
+    height: calc(100dvh - 52px);
+    padding: 4px;
+    gap: 4px;
+    overflow: hidden;
+  }
+
+  .game-sidebar {
+    flex-direction: row;
+    width: 100%;
+    flex-shrink: 0;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 2px 0;
+  }
+  .game-sidebar::-webkit-scrollbar { display: none; }
+
+  .player-card {
+    min-width: 110px;
+    padding: 7px 8px;
+    flex-shrink: 0;
+  }
+  .pc-avatar { width: 28px; height: 28px; font-size: 0.8rem; }
+  .pc-name { font-size: 0.72rem; }
+  .pc-role { font-size: 0.6rem; }
+
+  .game-center { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+  .game-board-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+  #ludo-canvas { width: 100% !important; height: auto !important; max-height: calc(100dvh - 52px - 120px - 80px - 8px); }
+
+  .game-bottom { flex-shrink: 0; }
+  .game-log { max-height: 48px; overflow: hidden; }
+  .dice-area { gap: 8px; }
+  .btn-dice { padding: 10px 16px; font-size: 0.82rem; }
+  .turn-indicator { font-size: 0.72rem; padding: 6px 10px; }
+
+  /* Staking */
+  .stake-card-big { flex-direction: column; gap: 16px; padding: 16px; }
+  .tier-table { font-size: 0.72rem; }
+
+  /* Profile */
+  .profile-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .pstat-val { font-size: 1.3rem; }
+
+  /* Modal */
+  .modal { padding: 24px 16px; margin: 16px; max-width: calc(100vw - 32px); }
+}
+
+/* ========================================================
+   MICRO-ANIMATIONS
+   ======================================================== */
+
+/* Button hover scale (all .btn except disabled) */
+.btn:not(:disabled):not([disabled]) {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+.btn:not(:disabled):not([disabled]):hover {
+  transform: scale(1.04);
+}
+.btn:not(:disabled):not([disabled]):active {
+  transform: scale(0.97);
+}
+
+/* Active player card glow pulse */
+@keyframes active-player-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(53, 208, 127, 0.2); }
+  50%       { box-shadow: 0 0 20px rgba(53, 208, 127, 0.55), 0 0 4px rgba(53, 208, 127, 0.8); }
+}
+
+.player-card.active {
+  animation: active-player-glow 1.8s ease-in-out infinite;
+}
+
+/* Modal slide-in */
+.modal-overlay.active .modal {
+  animation: modal-slide-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes modal-slide-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+/* Toast slide-in from right */
+.toast {
+  animation: toast-in 0.25s ease forwards;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Cash Bet play button neon pulse when enabled */
+.cashbet-play-btn:not(:disabled) {
+  animation: cashbet-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes cashbet-pulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(53, 208, 127, 0.3); }
+  50%       { box-shadow: 0 0 22px rgba(53, 208, 127, 0.7), 0 0 6px rgba(53, 208, 127, 0.4); }
+}
+
+/* View transition fade */
+.view {
+  transition: opacity 0.18s ease;
+}
+.view:not(.active) {
+  pointer-events: none;
+  opacity: 0;
+}
+.view.active {
+  opacity: 1;
+}
