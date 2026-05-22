@@ -2104,3 +2104,163 @@ a {
 .view.active {
   opacity: 1;
 }
+
+/* ========================================================
+   WALLET DROPDOWN
+   ======================================================== */
+
+.wallet-wrapper {
+  position: relative;
+}
+
+.wallet-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: linear-gradient(180deg, #2d2445, #1a1525);
+  border: 2px solid var(--border);
+  border-radius: var(--r2);
+  padding: 12px;
+  z-index: 200;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+}
+
+.wallet-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--green));
+  border-radius: 2px;
+}
+
+.wallet-dropdown-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 0;
+}
+
+.wallet-dropdown-label {
+  font-size: 0.6rem;
+  color: var(--muted);
+  font-family: var(--pixel);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.wallet-dropdown-value {
+  font-size: 0.78rem;
+  color: var(--green);
+  font-weight: 700;
+}
+
+.wallet-dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+
+.wallet-dropdown-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--r);
+  border: none;
+  background: rgba(255,85,85,0.1);
+  color: var(--red);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: 0.15s;
+}
+
+.wallet-dropdown-btn:hover {
+  background: rgba(255,85,85,0.2);
+  transform: translateY(-1px);
+}
+
+.wallet-error-toast {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  padding: 8px 14px;
+  background: rgba(255,85,85,0.15);
+  border: 1px solid var(--red);
+  border-radius: var(--r);
+  color: var(--red);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 200;
+}
+
+/* ========================================================
+   DEMO BANNER
+   ======================================================== */
+
+.demo-banner {
+  position: fixed;
+  top: 52px;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  background: linear-gradient(90deg, rgba(179,136,255,0.2), rgba(53,208,127,0.2));
+  border-bottom: 1px solid rgba(179,136,255,0.3);
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: var(--purple);
+  backdrop-filter: blur(8px);
+}
+
+.demo-banner button {
+  padding: 3px 10px;
+  border-radius: 50px;
+  border: 1px solid rgba(179,136,255,0.4);
+  background: rgba(179,136,255,0.1);
+  color: var(--purple);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.demo-banner button:hover {
+  background: rgba(179,136,255,0.2);
+}
+
+/* ========================================================
+   HERO DEMO HINT
+   ======================================================== */
+
+.hero-demo-hint {
+  margin-top: 14px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.hero-demo-link {
+  background: none;
+  border: none;
+  color: var(--green);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: var(--font);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 0;
+}
+
+.hero-demo-link:hover {
+  color: var(--gold);
+}

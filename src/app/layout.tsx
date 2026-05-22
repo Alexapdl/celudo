@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit, Press_Start_2P } from "next/font/google";
 import "./globals.css";
+import Providers from "@/components/Providers";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -32,7 +33,9 @@ export default function RootLayout({
       lang="en"
       className={`${outfit.variable} ${pressStart2D.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

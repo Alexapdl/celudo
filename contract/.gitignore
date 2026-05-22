@@ -1,0 +1,22 @@
+# Foundry build artifacts
+out/
+cache/
+*.log
+
+# Dependencies
+lib/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
