@@ -1,4 +1,11 @@
+-- ============================================================
 -- SQL Schema for Celudo Supabase Database
+-- ============================================================
+-- ⚠️  This file is kept for reference only.
+-- Canonical migrations are in: supabase/migrations/
+-- To apply locally:   supabase db reset
+-- To push to remote:  supabase db push
+-- ============================================================
 -- Run this in your Supabase SQL Editor
 
 -- 1. Create Users Table

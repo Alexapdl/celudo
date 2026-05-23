@@ -1,0 +1,52 @@
+# ============================================================
+# Celudo - Supabase Local Development Configuration
+# ============================================================
+# For docs: https://supabase.com/docs/guides/local-development
+
+# Project identifier
+project_id = "celudo"
+
+[auth]
+enabled = false
+# Celudo uses wallet-based auth (0x...), not Supabase Auth
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+pooler_port = 6543
+# Pooling config for Supavisor
+[db.pooler]
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+# Seed file for local dev
+seed_enabled = true
+seed_path = "seed.sql"
+
+[realtime]
+enabled = false
+
+[studio]
+enabled = true
+port = 54323
+# Supabase Studio opens at http://localhost:54323
+
+[inbucket]
+enabled = false
+
+[storage]
+enabled = false
+
+[analytics]
+enabled = false
+
+[functions]
+enabled = false
