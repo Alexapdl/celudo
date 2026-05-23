@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
   --bg: #1a1525;
@@ -16,6 +20,35 @@
   --pixel: var(--font-press-start-2d), monospace;
   --r: 12px;
   --r2: 18px;
+  --radius: 0.625rem;
+  --background: #1a1525;
+  --foreground: #f0e6ff;
+  --card-foreground: #f0e6ff;
+  --popover: rgba(40, 30, 60, 0.95);
+  --popover-foreground: #f0e6ff;
+  --primary: #35d07f;
+  --primary-foreground: #0a2e1a;
+  --secondary: #4fc3f7;
+  --secondary-foreground: #0d2137;
+  --muted-foreground: #9b8ec4;
+  --accent: rgba(179, 136, 255, 0.15);
+  --accent-foreground: #b388ff;
+  --destructive: #ff5555;
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: rgba(53, 208, 127, 0.5);
+  --chart-1: #35d07f;
+  --chart-2: #ffd700;
+  --chart-3: #4fc3f7;
+  --chart-4: #b388ff;
+  --chart-5: #ff5555;
+  --sidebar: rgba(26, 21, 37, 0.95);
+  --sidebar-foreground: #f0e6ff;
+  --sidebar-primary: #35d07f;
+  --sidebar-primary-foreground: #0a2e1a;
+  --sidebar-accent: rgba(53, 208, 127, 0.12);
+  --sidebar-accent-foreground: #35d07f;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: rgba(53, 208, 127, 0.5);
 }
 
 *, *::before, *::after {
@@ -2263,4 +2296,102 @@ a {
 
 .hero-demo-link:hover {
   color: var(--gold);
+}
+
+/* ========================================================
+   LANDING PAGE
+   ======================================================== */
+
+.landing-page {
+  overflow-x: hidden;
+  background: var(--bg);
+}
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+.dark {
+  --background: #1a1525;
+  --foreground: #f0e6ff;
+  --card: rgba(40, 30, 60, 0.85);
+  --card-foreground: #f0e6ff;
+  --popover: rgba(40, 30, 60, 0.95);
+  --popover-foreground: #f0e6ff;
+  --primary: #35d07f;
+  --primary-foreground: #0a2e1a;
+  --secondary: #4fc3f7;
+  --secondary-foreground: #0d2137;
+  --muted: #2a1e3d;
+  --muted-foreground: #9b8ec4;
+  --accent: rgba(179, 136, 255, 0.15);
+  --accent-foreground: #b388ff;
+  --destructive: #ff5555;
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: rgba(53, 208, 127, 0.5);
+  --chart-1: #35d07f;
+  --chart-2: #ffd700;
+  --chart-3: #4fc3f7;
+  --chart-4: #b388ff;
+  --chart-5: #ff5555;
+  --sidebar: rgba(26, 21, 37, 0.95);
+  --sidebar-foreground: #f0e6ff;
+  --sidebar-primary: #35d07f;
+  --sidebar-primary-foreground: #0a2e1a;
+  --sidebar-accent: rgba(53, 208, 127, 0.12);
+  --sidebar-accent-foreground: #35d07f;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: rgba(53, 208, 127, 0.5);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }
