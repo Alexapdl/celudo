@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import { Outfit, Press_Start_2P } from "next/font/google";
+import { Outfit, Press_Start_2P, Geist } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -31,7 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${pressStart2D.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", outfit.variable, pressStart2D.variable, "font-sans", geist.variable)}
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
