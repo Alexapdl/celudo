@@ -23,10 +23,10 @@ export interface GameCallbacks {
 }
 
 export const C: Record<number, { name: string; bg: string; light: string; dark: string; fill: string; home: string }> = {
-  0: { name: 'Red', bg: '#e74c3c', light: '#ff8a80', dark: '#b71c1c', fill: '#5c1a1a', home: '#c0392b' },
-  1: { name: 'Green', bg: '#2ecc71', light: '#69f0ae', dark: '#1b7a3d', fill: '#1a3d2a', home: '#27ae60' },
-  2: { name: 'Yellow', bg: '#f1c40f', light: '#fff59d', dark: '#a68500', fill: '#3d3a1a', home: '#d4ac0d' },
-  3: { name: 'Blue', bg: '#3498db', light: '#82b1ff', dark: '#1a5276', fill: '#1a2a3d', home: '#2980b9' }
+  0: { name: 'Mario', bg: '#c06020', light: '#ffa080', dark: '#803010', fill: '#301010', home: '#903020' },
+  1: { name: 'Luigi', bg: '#40c020', light: '#81c784', dark: '#1b6e22', fill: '#0d2a14', home: '#388e3c' },
+  2: { name: 'Wario', bg: '#ffc020', light: '#fff59d', dark: '#a06000', fill: '#2a2000', home: '#e0a010' },
+  3: { name: 'Toad', bg: '#0040a0', light: '#80a0e0', dark: '#003070', fill: '#0a1430', home: '#003080' }
 };
 
 const CELL_COUNT = 52;
@@ -431,11 +431,11 @@ export class LudoGame {
     const cs = this.cs;
     const s = this.cv.width;
     x.clearRect(0, 0, s, s);
-    // Dark pixel background
-    x.fillStyle = '#0f0f23';
+    // Sky pixel background
+    x.fillStyle = '#40b0ff';
     x.fillRect(0, 0, s, s);
     // Grid pattern
-    x.strokeStyle = 'rgba(255,255,255,0.03)';
+    x.strokeStyle = 'rgba(255,255,255,0.08)';
     x.lineWidth = 1;
     for (let i = 0; i <= 15; i++) {
       x.beginPath();
@@ -466,12 +466,38 @@ export class LudoGame {
   star8(x: CanvasRenderingContext2D, cx: number, cy: number, r: number, col: string) {
     const s = Math.floor(r / 2);
     x.fillStyle = col;
-    x.fillRect(cx - s, cy - s * 2, s * 2, s * 4); // vertical bar
-    x.fillRect(cx - s * 2, cy - s, s * 4, s * 2); // horizontal bar
+    x.fillRect(cx - s, cy - s * 2, s * 2, s * 4);
+    x.fillRect(cx - s * 2, cy - s, s * 4, s * 2);
     x.fillRect(cx - s - s / 2, cy - s - s / 2, s, s);
     x.fillRect(cx + s / 2, cy - s - s / 2, s, s);
     x.fillRect(cx - s - s / 2, cy + s / 2, s, s);
     x.fillRect(cx + s / 2, cy + s / 2, s, s);
+  }
+
+  drawPipe(x: CanvasRenderingContext2D, lx: number, ty: number, pw: number, ph: number, cs: number) {
+    const lipW = Math.floor(pw * 1.5);
+    const lipH = Math.floor(cs * 0.5);
+    const lipX = Math.floor(lx + (pw - lipW) / 2);
+    // Pipe body
+    const bodyH = ph - lipH;
+    const shadeColors = ['#2d8c14', '#40c020', '#2d8c14', '#1b6e22'];
+    const segH = Math.ceil(bodyH / shadeColors.length);
+    for (let s = 0; s < shadeColors.length; s++) {
+      const sy = ty + s * segH;
+      const h = Math.min(segH, ty + bodyH - sy);
+      if (h <= 0) continue;
+      this.px(x, lx, sy, pw, h, shadeColors[s]);
+    }
+    // Pipe lip (top)
+    this.px(x, lipX, ty + bodyH, lipW, lipH, '#40c020');
+    this.px(x, lipX + 2, ty + bodyH, lipW - 4, 2, '#60e040');
+  }
+
+  drawCoin(x: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+    this.px(x, cx - r, cy - r, r * 2, r * 2, '#ffc020');
+    this.px(x, cx - r + 2, cy - r + 2, r * 2 - 4, r * 2 - 4, '#ffe060');
+    this.px(x, cx - 1, cy - 2, 2, 4, '#a06000');
+    this.px(x, cx - 1, cy + 2, 2, 4, '#a06000');
   }
 
   drawBoard(x: CanvasRenderingContext2D, cs: number) {
@@ -486,13 +512,13 @@ export class LudoGame {
           if (qi >= 0 && qi < this.pc) {
             this.cell8(x, px, py, cs, C[qi].fill, C[qi].dark);
           } else {
-            this.cell8(x, px, py, cs, '#13112a', '#1a1835');
+            this.cell8(x, px, py, cs, '#60c0f0', '#40a0e0');
           }
         } else if (cell === 'E') {
-          this.cell8(x, px, py, cs, '#e8dcc8', '#c4b89a');
+          this.cell8(x, px, py, cs, '#f0e8d8', '#b0a080');
         } else if (cell === 'S') {
-          this.cell8(x, px, py, cs, '#ffe8a0', '#d4a800');
-          this.star8(x, Math.floor(px + cs / 2), Math.floor(py + cs / 2), Math.floor(cs * 0.2), '#c8960a');
+          this.cell8(x, px, py, cs, '#ffe080', '#b08000');
+          this.star8(x, Math.floor(px + cs / 2), Math.floor(py + cs / 2), Math.floor(cs * 0.2), '#a06000');
         } else if (cell === 'r') {
           this.cell8(x, px, py, cs, C[0].fill, C[0].dark);
         } else if (cell === 'g') {
@@ -507,7 +533,7 @@ export class LudoGame {
           const cx = px + cs / 2;
           const cy = py + cs / 2;
           const rr = cs * 0.32;
-          this.px(x, cx - rr, cy - rr, rr * 2, rr * 2, '#1a1525');
+          this.px(x, cx - rr, cy - rr, rr * 2, rr * 2, '#2c1810');
           x.strokeStyle = C[qi].bg;
           x.lineWidth = 2;
           x.strokeRect(Math.floor(cx - rr), Math.floor(cy - rr), Math.floor(rr * 2), Math.floor(rr * 2));
@@ -534,23 +560,45 @@ export class LudoGame {
       const cy = (tr + 0.5) * cs;
       this.star8(x, Math.floor(cx), Math.floor(cy), Math.floor(cs * 0.18), C[i].bg);
     });
+
+    // Mario pipe decorations at 4 board corners
+    const pw = Math.floor(cs * 0.9);
+    const ph = Math.floor(cs * 1.6);
+    const margin = Math.floor(cs * 0.2);
+    this.drawPipe(x, margin, 15 * cs - ph - margin, pw, ph, cs);
+    this.drawPipe(x, 15 * cs - pw - margin, 15 * cs - ph - margin, pw, ph, cs);
+
+    // Coin marks on safe cells
+    [13, 26, 39].forEach((idx) => {
+      if (idx >= TK.length) return;
+      const [tc, tr] = TK[idx];
+      const cx = Math.floor((tc + 0.5) * cs);
+      const cy = Math.floor((tr + 0.5) * cs);
+      this.drawCoin(x, cx, cy, Math.floor(cs * 0.15));
+    });
   }
 
   drawCenter(x: CanvasRenderingContext2D, px: number, py: number, cs: number, col: number, row: number) {
     if (col === 7 && row === 7) {
-      this.px(x, px, py, cs, cs, '#1a1525');
+      // ? Block center
+      this.px(x, px, py, cs, cs, '#2c1810');
       const cx = px + cs / 2;
       const cy = py + cs / 2;
-      const r = cs * 0.35;
-      this.px(x, cx - r, cy - r, r * 2, r * 2, '#ffd700');
-      x.fillStyle = '#000';
-      x.font = `bold ${Math.floor(cs * 0.35)}px monospace`;
+      const br = cs * 0.38;
+      // ? block base
+      this.px(x, Math.floor(cx - br), cy - br, br * 2, br * 2, '#ffc020');
+      this.px(x, Math.floor(cx - br + 2), cy - br + 2, br * 2 - 4, 3, '#ffe060');
+      // ? mark
+      x.fillStyle = '#2c1810';
+      x.font = `bold ${Math.floor(br * 1.1)}px monospace`;
       x.textAlign = 'center';
       x.textBaseline = 'middle';
-      x.fillText('★', cx, cy);
+      x.fillText('?', cx, cy + 1);
+      // Block shadow
+      this.px(x, Math.floor(cx - br), Math.floor(cy + br - 3), br * 2, 3, '#c08000');
       return;
     }
-    let tc = '#1a1835';
+    let tc = '#60c0f0';
     if (row < 7) tc = C[2].bg;
     else if (row > 7) tc = C[0].bg;
     else if (col < 7) tc = C[1].bg;
