@@ -16,7 +16,7 @@ interface Particle {
   twinkleOffset: number;
 }
 
-const COLORS = ["#ffd700", "#35d07f", "#b388ff", "#4fc3f7", "#ff5555"];
+const COLORS = ["#ffc020", "#ffc107", "#ffe060", "#ffeb3b", "#40c020", "#c06020"];
 
 export default function Sparkles({ count = 50, className = "" }: { count?: number; className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -48,8 +48,8 @@ export default function Sparkles({ count = 50, className = "" }: { count?: numbe
       y: Math.random() * h,
       vx: (Math.random() - 0.5) * 0.3,
       vy: (Math.random() - 0.5) * 0.3 - 0.15,
-      size: Math.random() * 3 + 1,
-      opacity: Math.random() * 0.8 + 0.2,
+      size: Math.random() * 3 + 2,
+      opacity: Math.random() * 0.7 + 0.3,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
       life: Math.random() * 200,
       maxLife: 200 + Math.random() * 200,
@@ -78,17 +78,13 @@ export default function Sparkles({ count = 50, className = "" }: { count?: numbe
         const twinkle = Math.sin(p.life * p.twinkleSpeed + p.twinkleOffset) * 0.5 + 0.5;
         const alpha = p.opacity * twinkle;
 
-        ctx.save();
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = p.color;
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = p.size * 4;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = alpha;
         ctx.fill();
-        ctx.restore();
       }
-
+      ctx.globalAlpha = 1;
       animId = requestAnimationFrame(draw);
     };
     draw();
@@ -102,7 +98,8 @@ export default function Sparkles({ count = 50, className = "" }: { count?: numbe
   return (
     <canvas
       ref={canvasRef}
-      className={`absolute inset-0 pointer-events-none ${className}`}
+      className={`absolute inset-0 z-10 ${className}`}
+      style={{ pointerEvents: "none" }}
     />
   );
 }
