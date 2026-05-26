@@ -19,7 +19,7 @@ export default function VictoryModal({ isOpen, won, points, onPlayAgain, onGoHom
       soundManager.winFanfare();
       // Multi-burst confetti
       const end = Date.now() + 3000;
-      const colors = ["#ffd700", "#35d07f", "#b388ff", "#ff6b6b", "#40e0d0"];
+      const colors = ["#ffc020", "#40c020", "#c06020", "#0040a0", "#ff6b6b"];
       const frame = () => {
         confetti({
           particleCount: 4,
@@ -129,9 +129,9 @@ export default function VictoryModal({ isOpen, won, points, onPlayAgain, onGoHom
                   won
                     ? {
                         textShadow: [
-                          "0 0 10px rgba(255,215,0,0.3)",
-                          "0 0 30px rgba(255,215,0,0.8)",
-                          "0 0 10px rgba(255,215,0,0.3)",
+                          "0 0 10px rgba(249,168,37,0.3)",
+                          "0 0 30px rgba(249,168,37,0.8)",
+                          "0 0 10px rgba(249,168,37,0.3)",
                         ],
                       }
                     : {}
