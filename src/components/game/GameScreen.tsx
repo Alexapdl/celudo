@@ -125,8 +125,8 @@ export default function GameScreen({
             <motion.div
               className="game-points-display"
               key={gamePtsEarned}
-              initial={{ scale: 1.3, color: "#ffd700" }}
-              animate={{ scale: 1, color: "#ffd700" }}
+              initial={{ scale: 1.3, color: "#ffc020" }}
+              animate={{ scale: 1, color: "#ffc020" }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               ⭐ <span>{gamePtsEarned}</span> pts
