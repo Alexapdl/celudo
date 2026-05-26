@@ -37,7 +37,7 @@ export default function Header({
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Image src="/celudo_logo.png" alt="Celudo" className="logo-img" width={32} height={32} />
+          <Image src="/logo.png" alt="Celudo" className="logo-img" width={32} height={32} />
           <span className="logo-text">Celudo</span>
         </motion.a>
         <nav className="header-nav">
