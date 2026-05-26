@@ -91,12 +91,12 @@ export default function DiceAnimation({ value, isRolling, disabled, onRoll }: Di
         style={{
           background:
             shakePhase === "landed"
-              ? "linear-gradient(180deg, #fff176, #ffd700)"
+              ? "linear-gradient(180deg, #ffe060, #ffc020)"
               : "linear-gradient(180deg, #fff, #e8e8e8)",
-          borderColor: shakePhase === "landed" ? "#ffd700" : "#ccc",
+          borderColor: shakePhase === "landed" ? "#ffc020" : "#ccc",
           boxShadow:
             shakePhase === "landed"
-              ? "0 4px 0 #c17900, 0 6px 24px rgba(255, 215, 0, 0.5)"
+              ? "0 4px 0 #a06000, 0 6px 24px rgba(249, 168, 37, 0.5)"
               : "0 4px 0 #aaa, 0 6px 14px rgba(0, 0, 0, 0.3)",
         }}
       >
@@ -112,7 +112,7 @@ export default function DiceAnimation({ value, isRolling, disabled, onRoll }: Di
               fontSize: "3rem",
               filter:
                 shakePhase === "landed"
-                  ? "drop-shadow(0 0 8px rgba(255, 215, 0, 0.6))"
+                  ? "drop-shadow(0 0 8px rgba(249, 168, 37, 0.6))"
                   : "none",
             }}
           >
