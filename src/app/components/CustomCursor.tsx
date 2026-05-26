@@ -75,9 +75,9 @@ export default function CustomCursor() {
     // Soft trail
     let lastTrail = 0;
     const TRAIL_COLORS = [
-      "rgba(53, 208, 127, 0.45)",
-      "rgba(53, 208, 127, 0.3)",
-      "rgba(179, 136, 255, 0.35)",
+      "rgba(249, 168, 37, 0.4)",
+      "rgba(67, 176, 71, 0.35)",
+      "rgba(229, 37, 33, 0.3)",
     ];
 
     function spawnTrail(x: number, y: number) {
@@ -104,9 +104,9 @@ export default function CustomCursor() {
         [-1, 1],  [0, 1],  [1, 1],
       ];
       const BURST_COLORS = [
-        "rgba(53,208,127,0.7)",
-        "rgba(255,215,0,0.65)",
-        "rgba(179,136,255,0.6)",
+        "rgba(249,168,37,0.65)",
+        "rgba(67,176,71,0.6)",
+        "rgba(229,37,33,0.55)",
       ];
       DIRS.forEach(([dx, dy]) => {
         const p = document.createElement("div");
