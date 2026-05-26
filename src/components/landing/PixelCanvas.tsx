@@ -12,7 +12,7 @@ interface PixelCanvasProps {
 export default function PixelCanvas({
   gap = 6,
   speed = 0.3,
-  colors = ["#35d07f", "#ffd700", "#b388ff", "#4fc3f7", "#ff5555"],
+  colors = ["#40c020", "#ffc020", "#c06020", "#0040a0", "#6040a0"],
   className = "",
 }: PixelCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
