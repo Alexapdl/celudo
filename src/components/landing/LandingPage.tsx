@@ -9,59 +9,60 @@ import GooeyText from "./GooeyText";
 import PixelButton from "./PixelButton";
 import FloatingDice from "./FloatingDice";
 import PixelCanvas from "./PixelCanvas";
+import CustomCursor from "@/app/components/CustomCursor";
 
 const LIVE_MATCHES = [
   {
     players: [
-      { name: "0xA3f...Kira", color: "#35d07f", emoji: "🟢" },
-      { name: "0xD72...Nova", color: "#ff5555", emoji: "🔴" },
-      { name: "0x9B1...Zeus", color: "#4fc3f7", emoji: "🔵" },
-      { name: "0xF4e...Luna", color: "#ffd700", emoji: "🟡" },
+      { name: "0xA3f...Kira", color: "#40c020", emoji: "🟢" },
+      { name: "0xD72...Nova", color: "#c06020", emoji: "🔴" },
+      { name: "0x9B1...Zeus", color: "#0040a0", emoji: "🔵" },
+      { name: "0xF4e...Luna", color: "#ffc020", emoji: "🟡" },
     ],
     mode: "4-Player Classic",
     stakes: "🏆 +100 pts",
   },
   {
     players: [
-      { name: "0x5C3...Ace", color: "#35d07f", emoji: "🟢" },
-      { name: "0x8E2...Rex", color: "#ff5555", emoji: "🔴" },
+      { name: "0x5C3...Ace", color: "#40c020", emoji: "🟢" },
+      { name: "0x8E2...Rex", color: "#c06020", emoji: "🔴" },
     ],
     mode: "1v1 Blitz",
     stakes: "💰 0.5 cUSD",
   },
   {
     players: [
-      { name: "0x1A7...Mika", color: "#35d07f", emoji: "🟢" },
-      { name: "0xB34...Yuki", color: "#ff5555", emoji: "🔴" },
-      { name: "0x6F9...Dara", color: "#b388ff", emoji: "🟣" },
+      { name: "0x1A7...Mika", color: "#40c020", emoji: "🟢" },
+      { name: "0xB34...Yuki", color: "#c06020", emoji: "🔴" },
+      { name: "0x6F9...Dara", color: "#6040a0", emoji: "🟣" },
     ],
     mode: "3-Player Speed",
     stakes: "⭐ +50 pts",
   },
   {
     players: [
-      { name: "0x2D8...Finn", color: "#35d07f", emoji: "🟢" },
-      { name: "0xC45...Haze", color: "#ffd700", emoji: "🟡" },
-      { name: "0x7A1...Echo", color: "#4fc3f7", emoji: "🔵" },
-      { name: "0xE93...Tao", color: "#ff5555", emoji: "🔴" },
+      { name: "0x2D8...Finn", color: "#40c020", emoji: "🟢" },
+      { name: "0xC45...Haze", color: "#ffc020", emoji: "🟡" },
+      { name: "0x7A1...Echo", color: "#0040a0", emoji: "🔵" },
+      { name: "0xE93...Tao", color: "#c06020", emoji: "🔴" },
     ],
     mode: "Grand Classic",
     stakes: "👑 +200 pts",
   },
   {
     players: [
-      { name: "0x4F6...Nyx", color: "#ff5555", emoji: "🔴" },
-      { name: "0x0B7...Sol", color: "#35d07f", emoji: "🟢" },
+      { name: "0x4F6...Nyx", color: "#c06020", emoji: "🔴" },
+      { name: "0x0B7...Sol", color: "#40c020", emoji: "🟢" },
     ],
     mode: "1v1 Cash Bet",
     stakes: "💰 1.0 cUSD",
   },
   {
     players: [
-      { name: "0x3E2...Kai", color: "#4fc3f7", emoji: "🔵" },
-      { name: "0xD19...Zara", color: "#b388ff", emoji: "🟣" },
-      { name: "0x8C4...Blaze", color: "#35d07f", emoji: "🟢" },
-      { name: "0xA56...Rune", color: "#ffd700", emoji: "🟡" },
+      { name: "0x3E2...Kai", color: "#0040a0", emoji: "🔵" },
+      { name: "0xD19...Zara", color: "#6040a0", emoji: "🟣" },
+      { name: "0x8C4...Blaze", color: "#40c020", emoji: "🟢" },
+      { name: "0xA56...Rune", color: "#ffc020", emoji: "🟡" },
     ],
     mode: "Weekly Showdown",
     stakes: "🏆 +500 pts",
@@ -87,6 +88,7 @@ function SectionInView({ children, className = "", delay = 0 }: { children: Reac
 export default function LandingPage() {
   return (
     <>
+      <CustomCursor />
       <style jsx>{`
         @keyframes marquee-scroll {
           from { transform: translateX(0); }
@@ -103,18 +105,18 @@ export default function LandingPage() {
           flex-shrink: 0;
           width: 280px;
           padding: 16px;
-          background: rgba(40, 30, 60, 0.85);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 16px;
+          background: #ffffff;
+          border: 3px solid #2c1810;
+          border-radius: 2px;
           position: relative;
           overflow: hidden;
-          backdrop-filter: blur(12px);
-          transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+          transition: transform 0.3s, box-shadow 0.3s;
+          box-shadow: 4px 4px 0 rgba(0,0,0,0.15);
+          image-rendering: pixelated;
         }
         .live-match-card:hover {
-          border-color: rgba(53, 208, 127, 0.4);
           transform: translateY(-4px);
-          box-shadow: 0 12px 40px rgba(53, 208, 127, 0.15), 0 0 0 1px rgba(53, 208, 127, 0.1);
+          box-shadow: 6px 6px 0 rgba(0,0,0,0.2);
         }
         .live-match-card::before {
           content: '';
@@ -122,25 +124,38 @@ export default function LandingPage() {
           top: 0;
           left: 0;
           right: 0;
-          height: 2px;
-          background: linear-gradient(90deg, transparent, rgba(53, 208, 127, 0.6), transparent);
+          height: 4px;
+          background: var(--green);
+        }
+        .live-match-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 6px 0 #602000, 0 10px 16px rgba(0,0,0,0.15);
+        }
+        .live-match-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: repeating-linear-gradient(90deg, var(--brown), var(--brown) 10px, #905020 10px, #905020 12px);
         }
         .live-indicator {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #35d07f;
+          width: 8px;
+          height: 8px;
+          background: #40c020;
+          border-radius: 2px;
           display: inline-block;
           animation: pulse-live 1.5s ease-in-out infinite;
         }
         @keyframes pulse-live {
-          0%, 100% { opacity: 1; box-shadow: 0 0 4px rgba(53, 208, 127, 0.8); }
-          50% { opacity: 0.5; box-shadow: 0 0 8px rgba(53, 208, 127, 0.3); }
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(1.3); }
         }
         .floating-die-item {
           position: absolute;
           pointer-events: none;
-          filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.3));
+          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.12));
           user-select: none;
           z-index: 1;
         }
@@ -159,31 +174,41 @@ export default function LandingPage() {
           }
         }
         .bento-card {
-          background: rgba(40, 30, 60, 0.85);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 20px;
+          background: #ffffff;
+          border: 3px solid #2c1810;
+          border-radius: 2px;
           padding: 24px;
           position: relative;
           overflow: hidden;
-          backdrop-filter: blur(12px);
-          transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+          transition: transform 0.3s, box-shadow 0.3s;
+          box-shadow: 4px 4px 0 rgba(0,0,0,0.15);
+          image-rendering: pixelated;
         }
         .bento-card:hover {
           transform: translateY(-4px);
-          border-color: rgba(255, 255, 255, 0.15);
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+          box-shadow: 6px 6px 0 rgba(0,0,0,0.2);
         }
         .bento-card::before {
           content: '';
           position: absolute;
           top: 0; left: 0; right: 0;
-          height: 2px;
+          height: 4px;
         }
-        .bento-card.green::before { background: linear-gradient(90deg, transparent, #35d07f, transparent); }
-        .bento-card.gold::before { background: linear-gradient(90deg, transparent, #ffd700, transparent); }
-        .bento-card.purple::before { background: linear-gradient(90deg, transparent, #b388ff, transparent); }
-        .bento-card.blue::before { background: linear-gradient(90deg, transparent, #4fc3f7, transparent); }
-        .bento-card.red::before { background: linear-gradient(90deg, transparent, #ff5555, transparent); }
+        .bento-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 6px 0 #602000, 0 10px 16px rgba(0,0,0,0.15);
+        }
+        .bento-card::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          height: 4px;
+        }
+        .bento-card.green::before { background: #40c020; }
+        .bento-card.gold::before { background: #ffc020; }
+        .bento-card.purple::before { background: #6040a0; }
+        .bento-card.blue::before { background: #0040a0; }
+        .bento-card.red::before { background: #c06020; }
         .bento-card.wide { grid-column: span 2; }
         .bento-card.tall { grid-row: span 2; }
         @media (max-width: 640px) {
@@ -191,24 +216,31 @@ export default function LandingPage() {
           .bento-card.tall { grid-row: span 1; }
         }
         .tournament-card {
-          background: rgba(40, 30, 60, 0.9);
-          border: 2px solid rgba(255, 255, 255, 0.08);
-          border-radius: 16px;
+          background: #ffffff;
+          border: 3px solid #2c1810;
+          border-radius: 2px;
           padding: 20px;
           position: relative;
           overflow: hidden;
           text-align: center;
           transition: all 0.3s;
+          box-shadow: 4px 4px 0 rgba(0,0,0,0.15);
+          image-rendering: pixelated;
         }
         .tournament-card:hover {
-          border-color: rgba(255, 215, 0, 0.5);
-          box-shadow: 0 0 30px rgba(255, 215, 0, 0.15), inset 0 0 30px rgba(255, 215, 0, 0.05);
+          border-color: var(--gold);
+          box-shadow: 6px 6px 0 rgba(0,0,0,0.2);
+          transform: translateY(-6px);
+        }
+        .tournament-card:hover {
+          border-color: var(--gold);
+          box-shadow: 0 6px 0 #a06000, 0 10px 16px rgba(0,0,0,0.15);
           transform: translateY(-6px);
         }
         .tournament-badge {
           display: inline-block;
           padding: 4px 12px;
-          border-radius: 50px;
+          border-radius: 4px;
           font-size: 0.6rem;
           font-weight: 800;
           text-transform: uppercase;
@@ -216,19 +248,256 @@ export default function LandingPage() {
           font-family: var(--pixel);
         }
         .badge-gold {
-          background: rgba(255, 215, 0, 0.15);
+          background: rgba(249, 168, 37, 0.1);
           color: var(--gold);
-          border: 1px solid rgba(255, 215, 0, 0.3);
+          border: 2px solid rgba(249, 168, 37, 0.3);
         }
         .badge-green {
-          background: rgba(53, 208, 127, 0.15);
+          background: rgba(67, 176, 71, 0.1);
           color: var(--green);
-          border: 1px solid rgba(53, 208, 127, 0.3);
+          border: 2px solid rgba(67, 176, 71, 0.3);
         }
         .badge-purple {
-          background: rgba(179, 136, 255, 0.15);
+          background: rgba(142, 68, 173, 0.1);
           color: var(--purple);
-          border: 1px solid rgba(179, 136, 255, 0.3);
+          border: 2px solid rgba(142, 68, 173, 0.3);
+        }
+
+        .mario-footer {
+          image-rendering: pixelated;
+        }
+
+        .footer-grass {
+          height: 16px;
+          background: linear-gradient(180deg, #40c020 0%, #40c020 33%, #2d8c14 33%, #2d8c14 66%, #1b6e22 66%, #1b6e22 100%);
+          image-rendering: pixelated;
+        }
+
+        .footer-ground {
+          background:
+            repeating-linear-gradient(
+              90deg,
+              #804000 0px, #804000 4px,
+              #602000 4px, #602000 8px
+            ),
+            repeating-linear-gradient(
+              0deg,
+              #602000 0px, #602000 4px,
+              #804000 4px, #804000 8px
+            ),
+            #703000;
+          image-rendering: pixelated;
+          border-top: 2px solid #2d8c14;
+        }
+
+        /* ===== MARIO INTERACTIVE HERO SCENE ===== */
+        .hero-scene {
+          image-rendering: pixelated;
+          overflow: visible;
+        }
+
+        /* Green Pipes */
+        .hero-pipe {
+          position: absolute;
+          bottom: 48px;
+          width: 48px;
+          cursor: pointer;
+          z-index: 5;
+        }
+        .hero-pipe-left { left: 8px; }
+        .hero-pipe-right { right: 8px; }
+
+        .pipe-lip {
+          width: 60px;
+          height: 14px;
+          background: #40c020;
+          border: 2px solid #1b6e22;
+          border-bottom: none;
+          border-radius: 2px 2px 0 0;
+          margin-left: -6px;
+        }
+        .pipe-lip::after {
+          content: '';
+          display: block;
+          width: 52px;
+          height: 4px;
+          background: #60e040;
+          margin: 3px auto 0;
+          border-radius: 1px;
+        }
+
+        .pipe-body {
+          width: 48px;
+          height: 64px;
+          background: linear-gradient(180deg, #40c020 0%, #2d8c14 50%, #1b6e22 100%);
+          border: 3px solid #1b6e22;
+          border-top: none;
+          border-radius: 0 0 2px 2px;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .pipe-shine {
+          position: absolute;
+          left: 6px;
+          top: 4px;
+          width: 10px;
+          height: 50px;
+          background: rgba(255,255,255,0.15);
+        }
+
+        .pipe-coin {
+          position: absolute;
+          top: -12px;
+          left: 50%;
+          transform: translateX(-50%);
+          font-size: 1.4rem;
+          z-index: 6;
+          pointer-events: none;
+          filter: drop-shadow(0 2px 0 rgba(0,0,0,0.2));
+        }
+
+        /* ? Block Clouds */
+        .hero-cloud-block {
+          position: absolute;
+          width: 44px;
+          height: 44px;
+          background: linear-gradient(180deg, #ffc020 0%, #e0a010 100%);
+          border: 3px solid #2c1810;
+          border-radius: 2px;
+          cursor: pointer;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+          image-rendering: pixelated;
+        }
+
+        .cloud-block-text {
+          font-family: var(--pixel);
+          font-size: 1.3rem;
+          color: #2c1810;
+          font-weight: 900;
+          z-index: 2;
+        }
+
+        .cloud-block-shine {
+          position: absolute;
+          top: 2px;
+          left: 3px;
+          width: 14px;
+          height: 6px;
+          background: rgba(255,255,255,0.3);
+        }
+
+        .hero-cloud-1 { top: 16px; left: 28%; }
+        .hero-cloud-2 { top: 50px; right: 22%; }
+        .hero-cloud-3 { top: 24px; left: 52%; }
+
+        /* Hills */
+        .hero-hills {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 48px;
+          overflow: hidden;
+          image-rendering: pixelated;
+        }
+
+        .hero-hill {
+          position: absolute;
+          bottom: 0;
+          image-rendering: pixelated;
+        }
+
+        .hero-hill-1 {
+          left: -10px;
+          width: 200px;
+          height: 48px;
+          background: linear-gradient(180deg, #40c020 0%, #2d8c14 40%, #1b6e22 100%);
+          clip-path: polygon(0% 100%, 5% 50%, 15% 30%, 30% 20%, 45% 35%, 60% 55%, 75% 65%, 90% 75%, 100% 90%, 100% 100%);
+        }
+
+        .hero-hill-2 {
+          right: 20px;
+          width: 260px;
+          height: 40px;
+          background: linear-gradient(180deg, #2d8c14 0%, #1b6e22 100%);
+          clip-path: polygon(0% 80%, 10% 60%, 25% 40%, 40% 55%, 55% 70%, 70% 55%, 85% 65%, 100% 85%, 100% 100%, 0% 100%);
+        }
+
+        .hero-hill-3 {
+          left: 40%;
+          width: 180px;
+          height: 32px;
+          bottom: 10px;
+          background: #0d5a14;
+          clip-path: polygon(0% 100%, 15% 60%, 35% 30%, 55% 50%, 75% 70%, 90% 85%, 100% 100%);
+        }
+
+        .hero-bush {
+          position: absolute;
+          bottom: 36px;
+          image-rendering: pixelated;
+        }
+
+        .hero-bush-1 {
+          left: 18%;
+          width: 64px;
+          height: 20px;
+          background: #40c020;
+          border: 2px solid #1b6e22;
+          border-radius: 2px;
+        }
+        .hero-bush-1::after {
+          content: '';
+          position: absolute;
+          top: -8px;
+          left: 8px;
+          width: 30px;
+          height: 14px;
+          background: #40c020;
+          border: 2px solid #1b6e22;
+          border-radius: 8px 8px 0 0;
+          border-bottom: none;
+        }
+
+        .hero-bush-2 {
+          right: 12%;
+          width: 50px;
+          height: 16px;
+          background: #2d8c14;
+          border: 2px solid #1b6e22;
+          border-radius: 2px;
+        }
+        .hero-bush-2::after {
+          content: '';
+          position: absolute;
+          top: -6px;
+          left: 6px;
+          width: 24px;
+          height: 12px;
+          background: #2d8c14;
+          border: 2px solid #1b6e22;
+          border-radius: 6px 6px 0 0;
+          border-bottom: none;
+        }
+
+        @media (max-width: 500px) {
+          .hero-scene { height: 150px; }
+          .hero-pipe { width: 36px; }
+          .pipe-lip { width: 46px; height: 10px; margin-left: -5px; }
+          .pipe-lip::after { width: 40px; height: 3px; }
+          .pipe-body { width: 36px; height: 48px; }
+          .pipe-shine { width: 8px; height: 36px; }
+          .hero-cloud-block { width: 36px; height: 36px; }
+          .cloud-block-text { font-size: 1.1rem; }
+          .hero-hills { height: 36px; }
+          .hero-hill-1 { width: 140px; height: 36px; }
+          .hero-hill-2 { width: 180px; height: 30px; }
+          .hero-hill-3 { width: 130px; height: 24px; }
         }
       `}</style>
 
@@ -277,6 +546,90 @@ export default function LandingPage() {
             <GooeyText texts={["APY", "yield", "rewards", "earnings"]} className="neon-gold" interval={2500} />{" "}
             up to <strong style={{ color: "var(--gold)" }}>+5%</strong>.
           </motion.p>
+
+          {/* ===== MARIO INTERACTIVE SCENE ===== */}
+          <div className="hero-scene" style={{ position: "relative", height: "200px", maxWidth: "600px", margin: "0 auto 24px" }}>
+            {/* Left Pipe */}
+            <motion.div
+              className="hero-pipe hero-pipe-left"
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              whileHover={{ scale: 1.05, y: -6 }}
+            >
+              <div className="pipe-lip"></div>
+              <div className="pipe-body">
+                <div className="pipe-shine"></div>
+              </div>
+            </motion.div>
+
+            {/* Floating ? Blocks */}
+            <motion.div
+              className="hero-cloud-block hero-cloud-1"
+              animate={{ y: [0, -12, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              whileHover={{ scale: 1.15, y: -16 }}
+              whileTap={{ scale: 0.9, y: 4 }}
+              onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
+              title="Click to learn more!"
+            >
+              <span className="cloud-block-text">?</span>
+              <div className="cloud-block-shine"></div>
+            </motion.div>
+
+            <motion.div
+              className="hero-cloud-block hero-cloud-2"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              whileHover={{ scale: 1.15, y: -14 }}
+              whileTap={{ scale: 0.9, y: 4 }}
+              onClick={() => window.location.href = "/app"}
+              title="Click to play!"
+            >
+              <span className="cloud-block-text">?</span>
+              <div className="cloud-block-shine"></div>
+            </motion.div>
+
+            <motion.div
+              className="hero-cloud-block hero-cloud-3"
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              whileHover={{ scale: 1.15, y: -15 }}
+              whileTap={{ scale: 0.9, y: 4 }}
+            >
+              <span className="cloud-block-text">★</span>
+              <div className="cloud-block-shine"></div>
+            </motion.div>
+
+            {/* Right Pipe */}
+            <motion.div
+              className="hero-pipe hero-pipe-right"
+              animate={{ y: [0, -2, 0] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+              whileHover={{ scale: 1.05, y: -5 }}
+            >
+              <div className="pipe-lip"></div>
+              <div className="pipe-body">
+                <div className="pipe-shine"></div>
+              </div>
+              {/* Coin popping out */}
+              <motion.div
+                className="pipe-coin"
+                animate={{ y: [-40, -70], opacity: [1, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
+              >
+                🪙
+              </motion.div>
+            </motion.div>
+
+            {/* Pixel hills at bottom */}
+            <div className="hero-hills">
+              <div className="hero-hill hero-hill-1"></div>
+              <div className="hero-hill hero-hill-2"></div>
+              <div className="hero-hill hero-hill-3"></div>
+              <div className="hero-bush hero-bush-1"></div>
+              <div className="hero-bush hero-bush-2"></div>
+            </div>
+          </div>
 
           <motion.div
             className="hero-btns"
@@ -387,8 +740,8 @@ export default function LandingPage() {
                 <div key={i} style={{
                   padding: "6px 10px",
                   borderRadius: "8px",
-                  background: "rgba(255, 215, 0, 0.06)",
-                  border: "1px solid rgba(255, 215, 0, 0.12)",
+                  background: "rgba(249, 168, 37, 0.06)",
+                  border: "1px solid rgba(249, 168, 37, 0.12)",
                   fontSize: "0.72rem",
                   color: "var(--text)",
                   fontFamily: i === 4 ? "var(--pixel)" : "var(--font)",
@@ -434,8 +787,8 @@ export default function LandingPage() {
               <div style={{
                 padding: "10px 16px",
                 borderRadius: "12px",
-                background: "rgba(255, 85, 85, 0.1)",
-                border: "1px solid rgba(255, 85, 85, 0.2)",
+                background: "rgba(229, 37, 33, 0.08)",
+                border: "1px solid rgba(229, 37, 33, 0.15)",
                 fontFamily: "var(--pixel)",
                 fontSize: "0.7rem",
                 color: "var(--red)",
@@ -509,7 +862,7 @@ export default function LandingPage() {
         <PixelCanvas
           gap={8}
           speed={0.2}
-          colors={["#35d07f", "#ffd700", "#b388ff", "#4fc3f7"]}
+          colors={["#40c020", "#ffc020", "#c06020", "#0040a0"]}
           className="opacity-30"
         />
 
@@ -556,7 +909,7 @@ export default function LandingPage() {
                 <div style={{
                   height: "4px",
                   borderRadius: "2px",
-                  background: "rgba(255, 255, 255, 0.1)",
+                  background: "rgba(139, 90, 43, 0.1)",
                   overflow: "hidden",
                   marginBottom: "14px",
                 }}>
@@ -594,7 +947,7 @@ export default function LandingPage() {
               lineHeight: 1.5,
               marginBottom: "16px",
               color: "var(--gold)",
-              textShadow: "0 0 20px rgba(255, 215, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.5)",
+              textShadow: "3px 3px 0 rgba(0,0,0,0.08)",
             }}>
               Ready to{" "}
               <GooeyText
@@ -626,30 +979,30 @@ export default function LandingPage() {
       </section>
 
       {/* ===== FOOTER ===== */}
-      <footer className="relative z-20" style={{
-        borderTop: "1px solid var(--border)",
-        padding: "40px 0",
-      }}>
-        <div className="container" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "1.4rem" }}>🎲</span>
-            <span style={{ fontFamily: "var(--pixel)", fontSize: "0.85rem", color: "var(--gold)" }}>
-              CELUDO
-            </span>
+      <footer className="relative z-20 mario-footer">
+        <div className="footer-grass"></div>
+        <div className="footer-ground">
+          <div className="container" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", paddingTop: "24px", paddingBottom: "24px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "1.4rem" }}>⭐</span>
+              <span style={{ fontFamily: "var(--pixel)", fontSize: "0.85rem", color: "#ffc020", textShadow: "2px 2px 0 rgba(0,0,0,0.3)" }}>
+                CELUDO
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: "24px", flexWrap: "wrap", justifyContent: "center" }}>
+              {["Twitter", "Discord", "Docs", "GitHub"].map((link) => (
+                <a key={link} href="#" style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.82rem", transition: "color 0.2s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#ffc020")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
+                >
+                  {link}
+                </a>
+              ))}
+            </div>
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem" }}>
+              Built on Celo · Play-to-Boost · v1.0
+            </p>
           </div>
-          <div style={{ display: "flex", gap: "24px", flexWrap: "wrap", justifyContent: "center" }}>
-            {["Twitter", "Discord", "Docs", "GitHub"].map((link) => (
-              <a key={link} href="#" style={{ color: "var(--muted)", fontSize: "0.82rem", transition: "color 0.2s" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--green)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
-              >
-                {link}
-              </a>
-            ))}
-          </div>
-          <p style={{ color: "var(--muted)", fontSize: "0.7rem", opacity: 0.6 }}>
-            Built on Celo · Play-to-Boost · v1.0
-          </p>
         </div>
       </footer>
     </div>
