@@ -108,18 +108,19 @@ export function RollingDice({ size = 40 }: RollingDiceProps) {
 
   return (
     <div
-      className="inline-flex items-center justify-center rounded-xl border-2 border-white/20 shadow-lg"
+      className="inline-flex items-center justify-center rounded-lg border-3 border-[#804000] shadow-lg"
       style={{
         width: size,
         height: size,
-        background: "linear-gradient(180deg, #fff, #e8e8e8)",
+        background: "linear-gradient(180deg, #fff, #f0e0a0)",
+        boxShadow: "0 4px 0 #a06000, 0 6px 8px rgba(0,0,0,0.12)",
         animation: isRolling ? "dice-roll 0.15s linear infinite" : "none",
         transition: "transform 0.2s",
       }}
     >
       <svg viewBox="0 0 100 100" width={size - 8} height={size - 8}>
         {dots[face]?.map(([cx, cy], i) => (
-          <circle key={i} cx={cx} cy={cy} r="8" fill="#1a1525" />
+            <circle key={i} cx={cx} cy={cy} r="8" fill="#2c1810" />
         ))}
       </svg>
     </div>
