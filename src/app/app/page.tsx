@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useAccount } from "wagmi";
 import { LudoGame, Player, GameCallbacks } from "../ludoEngine";
 import BackgroundCanvas from "../components/BackgroundCanvas";
-import CustomCursor from "../components/CustomCursor";
 import Header from "@/components/ui/Header";
 import ToastContainer from "@/components/ui/ToastContainer";
 import HomeScreen from "@/components/home/HomeScreen";
@@ -478,7 +477,6 @@ export default function Home() {
   return (
     <>
       <BackgroundCanvas />
-      <CustomCursor />
 
       <Header
         currentView={currentView}
