@@ -23,10 +23,10 @@ export interface GameCallbacks {
 }
 
 export const C: Record<number, { name: string; bg: string; light: string; dark: string; fill: string; home: string }> = {
-  0: { name: 'Mario', bg: '#c06020', light: '#ffa080', dark: '#803010', fill: '#301010', home: '#903020' },
-  1: { name: 'Luigi', bg: '#40c020', light: '#81c784', dark: '#1b6e22', fill: '#0d2a14', home: '#388e3c' },
-  2: { name: 'Wario', bg: '#ffc020', light: '#fff59d', dark: '#a06000', fill: '#2a2000', home: '#e0a010' },
-  3: { name: 'Toad', bg: '#0040a0', light: '#80a0e0', dark: '#003070', fill: '#0a1430', home: '#003080' }
+  0: { name: 'Red', bg: '#ff5c5c', light: '#ff9a9a', dark: '#c0392b', fill: '#2a1010', home: '#e74c3c' },
+  1: { name: 'Green', bg: '#45d185', light: '#80e8a8', dark: '#27ae60', fill: '#0d1a10', home: '#2ecc71' },
+  2: { name: 'Yellow', bg: '#fcd535', light: '#fde88a', dark: '#c4a000', fill: '#1a1600', home: '#f1c40f' },
+  3: { name: 'Blue', bg: '#5c9cff', light: '#9cc4ff', dark: '#2471a3', fill: '#0a1020', home: '#3498db' }
 };
 
 const CELL_COUNT = 52;
@@ -432,7 +432,7 @@ export class LudoGame {
     const s = this.cv.width;
     x.clearRect(0, 0, s, s);
     // Sky pixel background
-    x.fillStyle = '#40b0ff';
+    x.fillStyle = '#12121e';
     x.fillRect(0, 0, s, s);
     // Grid pattern
     x.strokeStyle = 'rgba(255,255,255,0.08)';
@@ -512,7 +512,7 @@ export class LudoGame {
           if (qi >= 0 && qi < this.pc) {
             this.cell8(x, px, py, cs, C[qi].fill, C[qi].dark);
           } else {
-            this.cell8(x, px, py, cs, '#60c0f0', '#40a0e0');
+            this.cell8(x, px, py, cs, '#1a1a30', '#252545');
           }
         } else if (cell === 'E') {
           this.cell8(x, px, py, cs, '#f0e8d8', '#b0a080');
@@ -560,45 +560,23 @@ export class LudoGame {
       const cy = (tr + 0.5) * cs;
       this.star8(x, Math.floor(cx), Math.floor(cy), Math.floor(cs * 0.18), C[i].bg);
     });
-
-    // Mario pipe decorations at 4 board corners
-    const pw = Math.floor(cs * 0.9);
-    const ph = Math.floor(cs * 1.6);
-    const margin = Math.floor(cs * 0.2);
-    this.drawPipe(x, margin, 15 * cs - ph - margin, pw, ph, cs);
-    this.drawPipe(x, 15 * cs - pw - margin, 15 * cs - ph - margin, pw, ph, cs);
-
-    // Coin marks on safe cells
-    [13, 26, 39].forEach((idx) => {
-      if (idx >= TK.length) return;
-      const [tc, tr] = TK[idx];
-      const cx = Math.floor((tc + 0.5) * cs);
-      const cy = Math.floor((tr + 0.5) * cs);
-      this.drawCoin(x, cx, cy, Math.floor(cs * 0.15));
-    });
   }
 
   drawCenter(x: CanvasRenderingContext2D, px: number, py: number, cs: number, col: number, row: number) {
     if (col === 7 && row === 7) {
-      // ? Block center
-      this.px(x, px, py, cs, cs, '#2c1810');
+      this.px(x, px, py, cs, cs, '#1a1a30');
       const cx = px + cs / 2;
       const cy = py + cs / 2;
-      const br = cs * 0.38;
-      // ? block base
-      this.px(x, Math.floor(cx - br), cy - br, br * 2, br * 2, '#ffc020');
-      this.px(x, Math.floor(cx - br + 2), cy - br + 2, br * 2 - 4, 3, '#ffe060');
-      // ? mark
-      x.fillStyle = '#2c1810';
-      x.font = `bold ${Math.floor(br * 1.1)}px monospace`;
+      const r = cs * 0.35;
+      this.px(x, cx - r, cy - r, r * 2, r * 2, '#fcd535');
+      x.fillStyle = '#000';
+      x.font = `bold ${Math.floor(cs * 0.35)}px monospace`;
       x.textAlign = 'center';
       x.textBaseline = 'middle';
-      x.fillText('?', cx, cy + 1);
-      // Block shadow
-      this.px(x, Math.floor(cx - br), Math.floor(cy + br - 3), br * 2, 3, '#c08000');
+      x.fillText('★', cx, cy);
       return;
     }
-    let tc = '#60c0f0';
+    let tc = '#1a1a30';
     if (row < 7) tc = C[2].bg;
     else if (row > 7) tc = C[0].bg;
     else if (col < 7) tc = C[1].bg;
