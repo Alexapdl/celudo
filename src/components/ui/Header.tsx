@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import WalletButton from "./WalletButton";
 import { motion } from "framer-motion";
 
@@ -11,61 +10,47 @@ interface HeaderProps {
   onWalletDisconnect?: () => void;
 }
 
+const tabs: { view: "home" | "play" | "staking" | "profile"; label: string }[] = [
+  { view: "play", label: "Play" },
+  { view: "staking", label: "Stake" },
+  { view: "profile", label: "Profile" },
+];
+
 export default function Header({
   currentView,
   onNavigate,
   onWalletConnect,
   onWalletDisconnect,
 }: HeaderProps) {
-  const navItems: { view: "home" | "play" | "staking" | "profile"; label: string; color: string; dark: string }[] = [
-    { view: "home", label: "HOME", color: "#40c020", dark: "#1b6e22" },
-    { view: "play", label: "PLAY", color: "#ffc020", dark: "#a06000" },
-    { view: "staking", label: "STAKE", color: "#c06020", dark: "#803010" },
-    { view: "profile", label: "PROFILE", color: "#0040a0", dark: "#003080" },
-  ];
+  const activeTab = currentView === "game" ? "play" : currentView;
 
   return (
     <header className="app-header">
       <div className="header-inner">
-        <motion.a
-          href="#"
+        <motion.button
           className="logo"
-          onClick={(e) => {
-            e.preventDefault();
-            onNavigate("home");
-          }}
-          whileHover={{ scale: 1.05 }}
+          onClick={() => onNavigate("home")}
           whileTap={{ scale: 0.95 }}
         >
-          <Image src="/logo.png" alt="Celudo" className="logo-img" width={32} height={32} />
           <span className="logo-text">CELUDO</span>
-        </motion.a>
+        </motion.button>
+
         <nav className="header-nav">
-          {navItems.map((item) => {
-            const isActive = currentView === item.view || (item.view === "play" && currentView === "game");
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.view;
             return (
-              <motion.a
-                key={item.view}
-                href="#"
-                className={`nav-item ${isActive ? "active" : ""}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onNavigate(item.view);
-                }}
-                whileHover={!isActive ? { scale: 1.06, y: -2 } : {}}
-                whileTap={{ scale: 0.94, y: 2 }}
-                style={isActive ? {
-                  background: item.color,
-                  color: "#2c1810",
-                  borderColor: item.dark,
-                  boxShadow: `0 3px 0 ${item.dark}`,
-                } : {}}
+              <motion.button
+                key={tab.view}
+                className={`nav-pill ${isActive ? "active" : ""}`}
+                onClick={() => onNavigate(tab.view)}
+                whileTap={{ scale: 0.92 }}
               >
-                <span className="nav-label">{item.label}</span>
-              </motion.a>
+                {tab.label}
+              </motion.button>
             );
           })}
         </nav>
+
         <WalletButton onConnect={onWalletConnect} onDisconnect={onWalletDisconnect} />
       </div>
     </header>
