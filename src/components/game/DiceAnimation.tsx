@@ -26,7 +26,6 @@ export default function DiceAnimation({ value, isRolling, disabled, onRoll }: Di
       const tickInterval = setInterval(() => {
         tickCount++;
         setDisplayValue(Math.floor(Math.random() * 6) + 1);
-        soundManager.diceTick();
         if (tickCount >= 5) {
           clearInterval(tickInterval);
           setShakePhase("rolling");
@@ -34,12 +33,10 @@ export default function DiceAnimation({ value, isRolling, disabled, onRoll }: Di
           const rollInterval = setInterval(() => {
             rollCount++;
             setDisplayValue(Math.floor(Math.random() * 6) + 1);
-            soundManager.diceTick();
             if (rollCount >= 6) {
               clearInterval(rollInterval);
               setShakePhase("landed");
               setDisplayValue(value);
-              soundManager.diceLand(value);
               setTimeout(() => setShakePhase("idle"), 600);
             }
           }, 100);
