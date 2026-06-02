@@ -137,7 +137,7 @@ export class LudoGame {
   resize() {
     const parent = this.cv.parentElement;
     if (!parent) return;
-    const s = Math.min(parent.clientWidth - 8, parent.clientHeight - 8, 520);
+    const s = Math.min(parent.clientWidth - 8, parent.clientHeight - 8, 600);
     this.cv.width = s;
     this.cv.height = s;
     this.cs = s / 15;
@@ -398,7 +398,6 @@ export class LudoGame {
   }
 
   animDice(cb: () => void) {
-    const frames = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
     let n = 0;
     const iv = setInterval(() => {
       // Simulate physical roll by selecting a random side
@@ -425,212 +424,283 @@ export class LudoGame {
     this.callbacks.onGameOver(this.winner, this.winner === 0);
   }
 
-  // ===== 8-BIT DRAWING =====
+  // ===== BEAUTIFUL MOBILE BOARD DRAWING =====
   draw() {
-    const x = this.ctx;
+    const ctx = this.ctx;
     const cs = this.cs;
     const s = this.cv.width;
-    x.clearRect(0, 0, s, s);
-    // Sky pixel background
-    x.fillStyle = '#12121e';
-    x.fillRect(0, 0, s, s);
-    // Grid pattern
-    x.strokeStyle = 'rgba(255,255,255,0.08)';
-    x.lineWidth = 1;
-    for (let i = 0; i <= 15; i++) {
-      x.beginPath();
-      x.moveTo(i * cs, 0);
-      x.lineTo(i * cs, s);
-      x.stroke();
-      x.beginPath();
-      x.moveTo(0, i * cs);
-      x.lineTo(s, i * cs);
-      x.stroke();
+    ctx.clearRect(0, 0, s, s);
+
+    // Rich dark wood background with subtle gradient
+    const bg = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s * 0.9);
+    bg.addColorStop(0, '#1e1e36');
+    bg.addColorStop(0.5, '#16162a');
+    bg.addColorStop(1, '#0e0e1e');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, s, s);
+
+    this.drawBoard(ctx, cs);
+    this.drawTokens(ctx, cs);
+  }
+
+  // Draw a rounded rect path (no fill, just path)
+  private rr(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+  }
+
+  // Fill rounded rect
+  private fr(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, fill: string) {
+    this.rr(ctx, x, y, w, h, r);
+    ctx.fillStyle = fill;
+    ctx.fill();
+  }
+
+  // Draw a cell with rounded corners
+  private cell(ctx: CanvasRenderingContext2D, cx: number, cy: number, cs: number, fill: string, border: string, radius: number = 0) {
+    const pad = 1;
+    const w = cs - pad * 2;
+    const h = cs - pad * 2;
+    if (radius > 0) {
+      this.fr(ctx, cx + pad, cy + pad, w, h, radius, fill);
+      this.rr(ctx, cx + pad, cy + pad, w, h, radius);
+    } else {
+      ctx.fillStyle = fill;
+      ctx.fillRect(cx + pad, cy + pad, w, h);
+      ctx.beginPath();
+      ctx.rect(cx + pad, cy + pad, w, h);
     }
-    this.drawBoard(x, cs);
-    this.drawTokens(x, cs);
+    ctx.strokeStyle = border;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
   }
 
-  px(x: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, col: string) {
-    x.fillStyle = col;
-    x.fillRect(Math.floor(cx), Math.floor(cy), Math.floor(w), Math.floor(h));
+  // Draw circle token
+  private circle(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, fill: string) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
+    ctx.fill();
   }
 
-  cell8(x: CanvasRenderingContext2D, cx: number, cy: number, cs: number, fill: string, border: string) {
-    this.px(x, cx + 1, cy + 1, cs - 2, cs - 2, fill);
-    x.strokeStyle = border;
-    x.lineWidth = 1;
-    x.strokeRect(Math.floor(cx) + 0.5, Math.floor(cy) + 0.5, Math.floor(cs) - 1, Math.floor(cs) - 1);
+  // Draw star shape
+  private star(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, col: string) {
+    ctx.fillStyle = col;
+    ctx.font = `${r * 2}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('★', cx, cy);
   }
 
-  star8(x: CanvasRenderingContext2D, cx: number, cy: number, r: number, col: string) {
-    const s = Math.floor(r / 2);
-    x.fillStyle = col;
-    x.fillRect(cx - s, cy - s * 2, s * 2, s * 4);
-    x.fillRect(cx - s * 2, cy - s, s * 4, s * 2);
-    x.fillRect(cx - s - s / 2, cy - s - s / 2, s, s);
-    x.fillRect(cx + s / 2, cy - s - s / 2, s, s);
-    x.fillRect(cx - s - s / 2, cy + s / 2, s, s);
-    x.fillRect(cx + s / 2, cy + s / 2, s, s);
-  }
-
-  drawPipe(x: CanvasRenderingContext2D, lx: number, ty: number, pw: number, ph: number, cs: number) {
-    const lipW = Math.floor(pw * 1.5);
-    const lipH = Math.floor(cs * 0.5);
-    const lipX = Math.floor(lx + (pw - lipW) / 2);
-    // Pipe body
-    const bodyH = ph - lipH;
-    const shadeColors = ['#2d8c14', '#40c020', '#2d8c14', '#1b6e22'];
-    const segH = Math.ceil(bodyH / shadeColors.length);
-    for (let s = 0; s < shadeColors.length; s++) {
-      const sy = ty + s * segH;
-      const h = Math.min(segH, ty + bodyH - sy);
-      if (h <= 0) continue;
-      this.px(x, lx, sy, pw, h, shadeColors[s]);
-    }
-    // Pipe lip (top)
-    this.px(x, lipX, ty + bodyH, lipW, lipH, '#40c020');
-    this.px(x, lipX + 2, ty + bodyH, lipW - 4, 2, '#60e040');
-  }
-
-  drawCoin(x: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-    this.px(x, cx - r, cy - r, r * 2, r * 2, '#ffc020');
-    this.px(x, cx - r + 2, cy - r + 2, r * 2 - 4, r * 2 - 4, '#ffe060');
-    this.px(x, cx - 1, cy - 2, 2, 4, '#a06000');
-    this.px(x, cx - 1, cy + 2, 2, 4, '#a06000');
-  }
-
-  drawBoard(x: CanvasRenderingContext2D, cs: number) {
+  drawBoard(ctx: CanvasRenderingContext2D, cs: number) {
     const s = this.cv.width;
+
+    // Board outer frame shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(0, 0, s, 3);
+    ctx.fillRect(0, s - 3, s, 3);
+    ctx.fillRect(0, 0, 3, s);
+    ctx.fillRect(s - 3, 0, 3, s);
+
+    // Draw the cross-shaped track (E cells)
     for (let r = 0; r < 15; r++) {
       for (let c = 0; c < 15; c++) {
-        const cell = BM[r][c];
+        const cellVal = BM[r][c];
         const px = c * cs;
         const py = r * cs;
-        if (cell === 'H') {
+
+        if (cellVal === 'E') {
+          // Track cell - cream colored
+          this.cell(ctx, px, py, cs, '#2a2818', 'rgba(255,255,255,0.06)', 0);
+          // Inner groove
+          ctx.fillStyle = 'rgba(0,0,0,0.15)';
+          ctx.fillRect(px + cs * 0.15, py + cs * 0.15, cs * 0.7, cs * 0.7);
+          ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(px + cs * 0.15, py + cs * 0.15, cs * 0.7, cs * 0.7);
+        } else if (cellVal === 'S') {
+          // Safe cell - golden glow
+          const alpha = 0.3 + Math.sin(this.frame * 0.05) * 0.1;
+          ctx.fillStyle = `rgba(252,213,53,${alpha})`;
+          ctx.fillRect(px, py, cs, cs);
+          this.cell(ctx, px, py, cs, '#3a3010', 'rgba(252,213,53,0.3)', 0);
+          this.star(ctx, px + cs / 2, py + cs / 2, cs * 0.22, '#fcd535');
+        } else if (cellVal === 'r') {
+          this.cell(ctx, px, py, cs, 'rgba(255,92,92,0.15)', 'rgba(255,92,92,0.3)', 0);
+        } else if (cellVal === 'g') {
+          this.cell(ctx, px, py, cs, 'rgba(69,209,133,0.15)', 'rgba(69,209,133,0.3)', 0);
+        } else if (cellVal === 'y') {
+          this.cell(ctx, px, py, cs, 'rgba(252,213,53,0.15)', 'rgba(252,213,53,0.3)', 0);
+        } else if (cellVal === 'b') {
+          this.cell(ctx, px, py, cs, 'rgba(92,156,255,0.15)', 'rgba(92,156,255,0.3)', 0);
+        } else if (cellVal === 'H') {
           const qi = qc(c, r);
           if (qi >= 0 && qi < this.pc) {
-            this.cell8(x, px, py, cs, C[qi].fill, C[qi].dark);
+            this.cell(ctx, px, py, cs, C[qi].fill, C[qi].dark, 0);
           } else {
-            this.cell8(x, px, py, cs, '#1a1a30', '#252545');
+            this.cell(ctx, px, py, cs, '#12122a', '#1a1a3a', 0);
           }
-        } else if (cell === 'E') {
-          this.cell8(x, px, py, cs, '#f0e8d8', '#b0a080');
-        } else if (cell === 'S') {
-          this.cell8(x, px, py, cs, '#ffe080', '#b08000');
-          this.star8(x, Math.floor(px + cs / 2), Math.floor(py + cs / 2), Math.floor(cs * 0.2), '#a06000');
-        } else if (cell === 'r') {
-          this.cell8(x, px, py, cs, C[0].fill, C[0].dark);
-        } else if (cell === 'g') {
-          this.cell8(x, px, py, cs, C[1].fill, C[1].dark);
-        } else if (cell === 'y') {
-          this.cell8(x, px, py, cs, C[2].fill, C[2].dark);
-        } else if (cell === 'b') {
-          this.cell8(x, px, py, cs, C[3].fill, C[3].dark);
-        } else if ('GRYB'.includes(cell)) {
+        } else if ('GRYB'.includes(cellVal)) {
+          // Token starting spots inside home
           const qi = qc(c, r);
-          this.cell8(x, px, py, cs, C[qi].fill, C[qi].dark);
-          const cx = px + cs / 2;
-          const cy = py + cs / 2;
-          const rr = cs * 0.32;
-          this.px(x, cx - rr, cy - rr, rr * 2, rr * 2, '#2c1810');
-          x.strokeStyle = C[qi].bg;
-          x.lineWidth = 2;
-          x.strokeRect(Math.floor(cx - rr), Math.floor(cy - rr), Math.floor(rr * 2), Math.floor(rr * 2));
-        } else if (cell === 'C') {
-          this.drawCenter(x, px, py, cs, c, r);
+          this.cell(ctx, px, py, cs, C[qi].fill, C[qi].dark, 0);
+          const cpx = px + cs / 2;
+          const cpy = py + cs / 2;
+          // Draw circle base
+          this.circle(ctx, cpx, cpy, cs * 0.3, 'rgba(0,0,0,0.4)');
+          this.circle(ctx, cpx, cpy, cs * 0.26, C[qi].bg);
+          ctx.strokeStyle = C[qi].light;
+          ctx.lineWidth = 1;
+          this.circle(ctx, cpx, cpy, cs * 0.26, 'rgba(0,0,0,0)');
+          ctx.stroke();
+        } else if (cellVal === 'C') {
+          this.drawCenter(ctx, px, py, cs, c, r);
         }
       }
     }
-    // Home borders
+
+    // Home base borders with rounded corners
     [[0, 9, 0], [0, 0, 1], [9, 0, 2], [9, 9, 3]].forEach(([sc, sr, ci]) => {
       if (ci >= this.pc) return;
-      x.strokeStyle = C[ci].bg;
-      x.lineWidth = 3;
-      x.strokeRect(sc * cs + 1, sr * cs + 1, 6 * cs - 2, 6 * cs - 2);
-      x.strokeStyle = C[ci].light;
-      x.lineWidth = 1;
-      x.strokeRect((sc + 1) * cs, (sr + 1) * cs, 4 * cs, 4 * cs);
+      const bx = sc * cs;
+      const by = sr * cs;
+      const bw = 6 * cs;
+
+      // Outer border
+      this.rr(ctx, bx + 2, by + 2, bw - 4, bw - 4, cs * 0.8);
+      ctx.strokeStyle = C[ci].bg;
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = C[ci].bg;
+      ctx.shadowBlur = 8;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Inner decorative line
+      this.rr(ctx, bx + cs * 0.8, by + cs * 0.8, bw - cs * 1.6, bw - cs * 1.6, cs * 0.5);
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
     });
+
     // Start markers
     [0, 13, 26, 39].forEach((idx, i) => {
       if (i >= this.pc) return;
       const [tc, tr] = TK[idx];
       const cx = (tc + 0.5) * cs;
       const cy = (tr + 0.5) * cs;
-      this.star8(x, Math.floor(cx), Math.floor(cy), Math.floor(cs * 0.18), C[i].bg);
+      this.star(ctx, cx, cy, cs * 0.2, C[i].bg);
     });
   }
 
-  drawCenter(x: CanvasRenderingContext2D, px: number, py: number, cs: number, col: number, row: number) {
+  drawCenter(ctx: CanvasRenderingContext2D, px: number, py: number, cs: number, col: number, row: number) {
     if (col === 7 && row === 7) {
-      this.px(x, px, py, cs, cs, '#1a1a30');
+      // Finish/winning square - decorative
+      ctx.fillStyle = '#1a1a30';
+      ctx.fillRect(px, py, cs, cs);
       const cx = px + cs / 2;
       const cy = py + cs / 2;
-      const r = cs * 0.35;
-      this.px(x, cx - r, cy - r, r * 2, r * 2, '#fcd535');
-      x.fillStyle = '#000';
-      x.font = `bold ${Math.floor(cs * 0.35)}px monospace`;
-      x.textAlign = 'center';
-      x.textBaseline = 'middle';
-      x.fillText('★', cx, cy);
+
+      // Glow behind
+      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, cs * 0.5);
+      grd.addColorStop(0, 'rgba(252,213,53,0.3)');
+      grd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grd;
+      ctx.fillRect(px, py, cs, cs);
+
+      // Crown icon
+      ctx.fillStyle = '#fcd535';
+      ctx.font = `bold ${Math.floor(cs * 0.45)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('👑', cx, cy);
       return;
     }
-    let tc = '#1a1a30';
-    if (row < 7) tc = C[2].bg;
-    else if (row > 7) tc = C[0].bg;
-    else if (col < 7) tc = C[1].bg;
-    else tc = C[3].bg;
-    this.px(x, px + 1, py + 1, cs - 2, cs - 2, tc);
+    let tc = '#1a1a28';
+    if (row < 7) tc = 'rgba(252,213,53,0.12)';
+    else if (row > 7) tc = 'rgba(255,92,92,0.12)';
+    else if (col < 7) tc = 'rgba(69,209,133,0.12)';
+    else tc = 'rgba(92,156,255,0.12)';
+    ctx.fillStyle = tc;
+    ctx.fillRect(px + 1, py + 1, cs - 2, cs - 2);
   }
 
-  drawTokens(x: CanvasRenderingContext2D, cs: number) {
+  drawTokens(ctx: CanvasRenderingContext2D, cs: number) {
     const t = this.frame;
     for (let pi = 0; pi < this.pc; pi++) {
       const p = this.pl[pi];
       if (p.done) continue;
       const pos = this.tokenPix(pi);
       const c = C[pi];
-      const r = cs * 0.34;
-      // Current player glow
+      const r = cs * 0.32;
+
+      // Current player pulse glow
       if (pi === this.cur && !this.an.on) {
-        const pulse = Math.sin(t * 0.08) * 0.5 + 0.5;
-        x.strokeStyle = `rgba(255,255,255,${0.2 + pulse * 0.5})`;
-        x.lineWidth = 3;
-        x.strokeRect(Math.floor(pos.x - r - 4), Math.floor(pos.y - r - 4), Math.floor((r + 4) * 2), Math.floor((r + 4) * 2));
+        const pulse = Math.sin(t * 0.06) * 0.5 + 0.5;
+        const glowR = r + 4 + pulse * 4;
+        const grd = ctx.createRadialGradient(pos.x, pos.y, r, pos.x, pos.y, glowR);
+        grd.addColorStop(0, `rgba(255,255,255,${0.3 + pulse * 0.4})`);
+        grd.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, glowR, 0, Math.PI * 2);
+        ctx.fill();
       }
-      // Shadow
-      this.px(x, pos.x - r + 2, pos.y - r + 2, r * 2, r * 2, 'rgba(0,0,0,.4)');
-      // Main token body
-      this.px(x, pos.x - r, pos.y - r, r * 2, r * 2, c.bg);
-      // Top highlight bar
-      this.px(x, pos.x - r + 2, pos.y - r + 2, r * 2 - 4, r * 0.4, c.light);
-      // Dark bottom edge
-      this.px(x, pos.x - r + 2, pos.y + r - r * 0.4, r * 2 - 4, r * 0.35, c.dark);
-      // Border
-      x.strokeStyle = c.dark;
-      x.lineWidth = 2;
-      x.strokeRect(Math.floor(pos.x - r), Math.floor(pos.y - r), Math.floor(r * 2), Math.floor(r * 2));
-      // Letter
-      x.fillStyle = '#fff';
-      x.font = `bold ${Math.floor(r * 0.85)}px var(--pixel), monospace`;
-      x.textAlign = 'center';
-      x.textBaseline = 'middle';
-      x.fillText(pi === 0 ? 'U' : c.name[0], Math.floor(pos.x), Math.floor(pos.y + 1));
+
+      // Shadow underneath
+      this.circle(ctx, pos.x + 2, pos.y + 2, r, 'rgba(0,0,0,0.5)');
+
+      // Main token body (circle)
+      this.circle(ctx, pos.x, pos.y, r, c.bg);
+
+      // Inner gradient highlight
+      const hgrd = ctx.createRadialGradient(pos.x - r * 0.3, pos.y - r * 0.4, 0, pos.x, pos.y, r);
+      hgrd.addColorStop(0, c.light);
+      hgrd.addColorStop(0.6, c.bg);
+      hgrd.addColorStop(1, c.dark);
+      ctx.fillStyle = hgrd;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Border ring
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
+      ctx.strokeStyle = c.dark;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Specular highlight (small white dot)
+      this.circle(ctx, pos.x - r * 0.35, pos.y - r * 0.35, r * 0.25, 'rgba(255,255,255,0.35)');
+
+      // Letter inside token
+      ctx.fillStyle = '#fff';
+      const fontSize = Math.max(8, Math.floor(r * 0.9));
+      ctx.font = `bold ${fontSize}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(pi === 0 ? 'U' : c.name[0], pos.x, pos.y + 0.5);
     }
-    // Click hint
+
+    // Click hint arrow
     if (this.moving && !this.an.on && this.cur === 0) {
       const pos = this.tokenPix(0);
       const pulse = Math.sin(t * 0.1) * 0.5 + 0.5;
-      x.fillStyle = `rgba(255,255,255,${0.5 + pulse * 0.5})`;
-      x.font = `bold ${Math.floor(cs * 0.28)}px var(--pixel), monospace`;
-      x.textAlign = 'center';
-      x.textBaseline = 'middle';
-      x.fillText('TAP!', Math.floor(pos.x), Math.floor(pos.y - cs * 0.75));
-      const ay = pos.y - cs * 0.45;
-      x.fillStyle = `rgba(255,255,255,${0.4 + pulse * 0.5})`;
-      this.px(x, pos.x - 3, ay - 8 + pulse * 4, 6, 10, '#fff');
-      this.px(x, pos.x - 6, ay + 2 + pulse * 4, 12, 4, '#fff');
+      const arrowY = pos.y - cs * 0.65;
+
+      ctx.fillStyle = `rgba(255,255,255,${0.6 + pulse * 0.4})`;
+      ctx.font = `bold ${Math.floor(cs * 0.3)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('TAP 👆', pos.x, arrowY);
     }
   }
 }
