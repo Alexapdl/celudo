@@ -2,130 +2,108 @@
 
 import { useCallback, useEffect } from "react";
 
-// We'll use Web Audio API oscillator for synthetic retro sounds
-// This avoids needing actual audio files and keeps the build self-contained
-
 class SoundManager {
   private ctx: AudioContext | null = null;
   private enabled = true;
-  private bgmOsc: OscillatorNode | null = null;
+  private bgmPlaying = false;
   private bgmGain: GainNode | null = null;
+  private bgmTimeout: ReturnType<typeof setTimeout> | null = null;
 
   private getCtx(): AudioContext {
     if (!this.ctx) {
       this.ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
     }
+    if (this.ctx.state === "suspended") this.ctx.resume();
     return this.ctx;
   }
 
-  private playTone(freq: number, type: OscillatorType, duration: number, volume = 0.15, fadeOut = true) {
+  private tone(freq: number, type: OscillatorType, dur: number, vol = 0.12, delay = 0, dest?: AudioNode) {
     if (!this.enabled) return;
     try {
       const ctx = this.getCtx();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = type;
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      gain.gain.setValueAtTime(volume, ctx.currentTime);
-      if (fadeOut) {
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-      }
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+      gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
       osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + duration);
-    } catch {
-      /* AudioContext may be suspended */
-    }
+      gain.connect(dest || ctx.destination);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + dur);
+    } catch { /* ignore */ }
   }
 
-  diceTick = () => {
-    // Rapid ticking sound for dice anticipation
-    this.playTone(800, "square", 0.05, 0.08);
-  };
+  // ===== SFX =====
+  tokenMove = () => { this.tone(330, "sine", 0.08, 0.08); this.tone(494, "sine", 0.08, 0.06, 0.06); };
+  capture = () => { this.tone(110, "sawtooth", 0.25, 0.12); this.tone(82, "square", 0.25, 0.1, 0.04); };
+  winFanfare = () => { [392, 523, 659, 784].forEach((f, i) => this.tone(f, "triangle", 0.35, 0.12, i * 0.12)); this.tone(98, "square", 0.5, 0.15, 0.5); };
+  loseSound = () => { this.tone(330, "sine", 0.25, 0.08); this.tone(262, "sine", 0.25, 0.08, 0.15); this.tone(196, "sine", 0.4, 0.08, 0.3); };
+  buttonClick = () => { this.tone(660, "sine", 0.04, 0.05); };
+  toastSound = (type: "success" | "error" | "info") => { const f = type === "success" ? 660 : type === "error" ? 165 : 494; this.tone(f, "sine", 0.12, 0.06); };
 
-  diceLand = (value: number) => {
-    // Thud + pitch based on value
-    const base = 200 + value * 80;
-    this.playTone(base, "triangle", 0.3, 0.2);
-    setTimeout(() => this.playTone(base * 0.7, "sine", 0.2, 0.1), 50);
-  };
-
-  tokenMove = () => {
-    // Cute bloop
-    this.playTone(440, "sine", 0.1, 0.1);
-    setTimeout(() => this.playTone(660, "sine", 0.1, 0.08), 80);
-  };
-
-  capture = () => {
-    // Crash sound
-    this.playTone(150, "sawtooth", 0.3, 0.15);
-    setTimeout(() => this.playTone(100, "square", 0.3, 0.12), 60);
-  };
-
-  winFanfare = () => {
-    // Victory arpeggio
-    const notes = [523, 659, 784, 1047];
-    notes.forEach((freq, i) => {
-      setTimeout(() => this.playTone(freq, "triangle", 0.4, 0.15), i * 150);
-    });
-    // Bass hit
-    setTimeout(() => this.playTone(130, "square", 0.6, 0.2), 600);
-  };
-
-  loseSound = () => {
-    // Sad descending
-    this.playTone(440, "sine", 0.3, 0.1);
-    setTimeout(() => this.playTone(349, "sine", 0.3, 0.1), 200);
-    setTimeout(() => this.playTone(262, "sine", 0.5, 0.1), 400);
-  };
-
-  buttonClick = () => {
-    this.playTone(880, "sine", 0.05, 0.06);
-  };
-
-  toastSound = (type: "success" | "error" | "info") => {
-    const freq = type === "success" ? 880 : type === "error" ? 220 : 660;
-    this.playTone(freq, "sine", 0.15, 0.08);
-  };
-
+  // ===== PIRATE SEA SHANTY BGM =====
+  // A minor pentatonic + dorian flavor, slow tempo
   startBGM = () => {
-    if (!this.enabled) return;
+    if (!this.enabled || this.bgmPlaying) return;
+    this.bgmPlaying = true;
     try {
       const ctx = this.getCtx();
-      if (this.bgmOsc) return; // already playing
-      this.bgmOsc = ctx.createOscillator();
       this.bgmGain = ctx.createGain();
-      this.bgmOsc.type = "sine";
-      this.bgmOsc.frequency.setValueAtTime(220, ctx.currentTime);
-      this.bgmGain.gain.setValueAtTime(0.03, ctx.currentTime);
-      this.bgmOsc.connect(this.bgmGain);
+      this.bgmGain.gain.setValueAtTime(0.035, ctx.currentTime);
       this.bgmGain.connect(ctx.destination);
-      this.bgmOsc.start();
-    } catch {
-      /* ignore */
-    }
+
+      // Sea shanty melody: A C D E G A (minor pentatonic)
+      // Low slow drone underneath
+      const melody: { n: number; d: number }[] = [
+        { n: 440, d: 0.55 }, { n: 0, d: 0.1 }, { n: 523, d: 0.35 }, { n: 587, d: 0.45 }, { n: 523, d: 0.25 },
+        { n: 440, d: 0.5 }, { n: 0, d: 0.1 }, { n: 392, d: 0.45 }, { n: 440, d: 0.35 }, { n: 523, d: 0.55 },
+        { n: 0, d: 0.1 }, { n: 587, d: 0.4 }, { n: 659, d: 0.45 }, { n: 587, d: 0.3 }, { n: 523, d: 0.5 },
+        { n: 0, d: 0.15 }, { n: 440, d: 0.55 }, { n: 392, d: 0.3 }, { n: 330, d: 0.6 },
+        { n: 0, d: 0.1 }, { n: 587, d: 0.35 }, { n: 523, d: 0.3 }, { n: 440, d: 0.5 }, { n: 392, d: 0.4 },
+        { n: 440, d: 0.6 }, { n: 0, d: 0.3 },
+      ];
+      const loopLen = melody.reduce((s, m) => s + m.d, 0);
+
+      // Drone bass
+      const playDrone = () => {
+        if (!this.bgmPlaying) return;
+        this.tone(110, "sine", loopLen * 0.95, 0.025, 0, this.bgmGain!);
+        this.tone(110, "triangle", loopLen * 0.5, 0.012, loopLen * 0.48, this.bgmGain!);
+      };
+
+      const playLoop = () => {
+        if (!this.bgmPlaying) return;
+        playDrone();
+        let t = 0;
+        melody.forEach(({ n, d }) => {
+          if (n > 0) this.tone(n, "sine", d * 0.7, 0.03, t, this.bgmGain!);
+          t += d;
+        });
+        this.bgmTimeout = setTimeout(playLoop, loopLen * 1000);
+      };
+      playLoop();
+    } catch { /* ignore */ }
   };
 
   stopBGM = () => {
-    try {
-      if (this.bgmOsc) {
-        this.bgmOsc.stop();
-        this.bgmOsc.disconnect();
-        this.bgmOsc = null;
-      }
-      if (this.bgmGain) {
-        this.bgmGain.disconnect();
-        this.bgmGain = null;
-      }
-    } catch {
-      /* ignore */
-    }
+    this.bgmPlaying = false;
+    if (this.bgmTimeout) { clearTimeout(this.bgmTimeout); this.bgmTimeout = null; }
+    try { if (this.bgmGain) { this.bgmGain.disconnect(); this.bgmGain = null; } } catch { /* ignore */ }
   };
 
-  toggle = () => {
+  get enabledStatus() { return this.enabled; }
+  get bgmActive() { return this.bgmPlaying; }
+
+  toggle = (): boolean => {
     this.enabled = !this.enabled;
+    if (!this.enabled) this.stopBGM();
     return this.enabled;
+  };
+
+  toggleBGM = (): boolean => {
+    if (this.bgmPlaying) { this.stopBGM(); return false; }
+    else { if (!this.enabled) this.enabled = true; this.startBGM(); return true; }
   };
 
   isEnabled = () => this.enabled;
@@ -134,18 +112,14 @@ class SoundManager {
 export const soundManager = new SoundManager();
 
 export function useSound() {
-  const resumeAudio = useCallback(() => {
-    const ctx = soundManager["ctx"];
-    if (ctx && ctx.state === "suspended") {
-      ctx.resume();
-    }
+  const resume = useCallback(() => {
+    try { if (soundManager["ctx"] && (soundManager["ctx"] as AudioContext).state === "suspended") (soundManager["ctx"] as AudioContext).resume(); } catch { /* ignore */ }
   }, []);
-
   useEffect(() => {
-    const handler = () => resumeAudio();
-    document.addEventListener("click", handler, { once: true });
-    return () => document.removeEventListener("click", handler);
-  }, [resumeAudio]);
-
+    const h = () => resume();
+    document.addEventListener("click", h, { once: true });
+    document.addEventListener("touchstart", h, { once: true });
+    return () => { document.removeEventListener("click", h); document.removeEventListener("touchstart", h); };
+  }, [resume]);
   return soundManager;
 }

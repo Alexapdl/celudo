@@ -23,10 +23,10 @@ export interface GameCallbacks {
 }
 
 export const C: Record<number, { name: string; bg: string; light: string; dark: string; fill: string; home: string }> = {
-  0: { name: 'Red', bg: '#ff5c5c', light: '#ff9a9a', dark: '#c0392b', fill: '#2a1010', home: '#e74c3c' },
-  1: { name: 'Green', bg: '#45d185', light: '#80e8a8', dark: '#27ae60', fill: '#0d1a10', home: '#2ecc71' },
-  2: { name: 'Yellow', bg: '#fcd535', light: '#fde88a', dark: '#c4a000', fill: '#1a1600', home: '#f1c40f' },
-  3: { name: 'Blue', bg: '#5c9cff', light: '#9cc4ff', dark: '#2471a3', fill: '#0a1020', home: '#3498db' }
+  0: { name: 'Green', bg: '#45d185', light: '#80e8a8', dark: '#27ae60', fill: '#0d1a10', home: '#2ecc71' },
+  1: { name: 'Red', bg: '#ff5c5c', light: '#ff9a9a', dark: '#c0392b', fill: '#2a1010', home: '#e74c3c' },
+  2: { name: 'Blue', bg: '#5c9cff', light: '#9cc4ff', dark: '#2471a3', fill: '#0a1020', home: '#3498db' },
+  3: { name: 'Yellow', bg: '#fcd535', light: '#fde88a', dark: '#c4a000', fill: '#1a1600', home: '#f1c40f' }
 };
 
 const CELL_COUNT = 52;
@@ -51,32 +51,6 @@ const HB: [number, number][] = [[2, 12], [2, 2], [12, 2], [12, 12]]; // home bas
 const SP = [0, 13, 26, 39]; // start pos on track
 const HE = [50, 11, 24, 37]; // home entry index
 const SAFE = [0, 8, 13, 21, 26, 34, 39, 47];
-
-function qc(c: number, r: number): number {
-  if (c <= 5 && r <= 5) return 1;
-  if (c >= 9 && r <= 5) return 2;
-  if (c <= 5 && r >= 9) return 0;
-  if (c >= 9 && r >= 9) return 3;
-  return -1;
-}
-
-const BM: string[][] = [
-  ['H', 'H', 'H', 'H', 'H', 'H', 'E', 'E', 'g', 'H', 'H', 'H', 'H', 'H', 'H'],
-  ['H', 'E', 'E', 'E', 'E', 'H', 'E', 'g', 'E', 'H', 'E', 'E', 'E', 'E', 'H'],
-  ['H', 'E', 'G', 'G', 'E', 'H', 'E', 'g', 'E', 'H', 'E', 'Y', 'Y', 'E', 'H'],
-  ['H', 'E', 'G', 'G', 'E', 'H', 'E', 'g', 'E', 'H', 'E', 'Y', 'Y', 'E', 'H'],
-  ['H', 'E', 'E', 'E', 'E', 'H', 'E', 'g', 'E', 'H', 'E', 'E', 'E', 'E', 'H'],
-  ['H', 'H', 'H', 'H', 'H', 'H', 'E', 'g', 'S', 'E', 'E', 'E', 'E', 'E', 'E'],
-  ['E', 'E', 'E', 'E', 'E', 'S', 'E', 'C', 'E', 'E', 'E', 'E', 'E', 'E', 'E'],
-  ['r', 'r', 'r', 'r', 'r', 'E', 'C', 'C', 'C', 'E', 'y', 'y', 'y', 'y', 'y'],
-  ['E', 'E', 'E', 'E', 'E', 'E', 'E', 'C', 'E', 'S', 'E', 'E', 'E', 'E', 'E'],
-  ['H', 'H', 'H', 'H', 'H', 'H', 'E', 'b', 'E', 'H', 'H', 'H', 'H', 'H', 'H'],
-  ['H', 'E', 'E', 'E', 'E', 'H', 'E', 'b', 'E', 'H', 'E', 'E', 'E', 'E', 'H'],
-  ['H', 'E', 'R', 'R', 'E', 'H', 'E', 'b', 'E', 'H', 'E', 'B', 'B', 'E', 'H'],
-  ['H', 'E', 'R', 'R', 'E', 'H', 'E', 'b', 'E', 'H', 'E', 'B', 'B', 'E', 'H'],
-  ['H', 'E', 'E', 'E', 'E', 'H', 'E', 'b', 'E', 'H', 'E', 'E', 'E', 'E', 'H'],
-  ['H', 'H', 'H', 'H', 'H', 'H', 'r', 'E', 'E', 'H', 'H', 'H', 'H', 'H', 'H']
-];
 
 export class LudoGame {
   private cv: HTMLCanvasElement;
@@ -104,6 +78,8 @@ export class LudoGame {
   private stopped: boolean = false;
   private ti: NodeJS.Timeout | null = null;
   private callbacks: GameCallbacks;
+  private boardImg: HTMLImageElement | null = null;
+  private boardLoaded = false;
 
   constructor(canvas: HTMLCanvasElement, pc: number = 4, callbacks: GameCallbacks) {
     this.cv = canvas;
@@ -122,6 +98,11 @@ export class LudoGame {
     // Animation state
     this.an = { on: false, pi: 0, path: [], idx: 0, t: 0, dur: 150 };
 
+    // Load board image
+    this.boardImg = new Image();
+    this.boardImg.onload = () => { this.boardLoaded = true; };
+    this.boardImg.src = '/board.png';
+
     this.onClick = this.onClick.bind(this);
     this.resize = this.resize.bind(this);
 
@@ -137,7 +118,7 @@ export class LudoGame {
   resize() {
     const parent = this.cv.parentElement;
     if (!parent) return;
-    const s = Math.min(parent.clientWidth - 8, parent.clientHeight - 8, 600);
+    const s = Math.min(parent.clientWidth - 8, parent.clientHeight - 8);
     this.cv.width = s;
     this.cv.height = s;
     this.cs = s / 15;
@@ -424,213 +405,27 @@ export class LudoGame {
     this.callbacks.onGameOver(this.winner, this.winner === 0);
   }
 
-  // ===== BEAUTIFUL MOBILE BOARD DRAWING =====
+  // ===== DRAW WITH BOARD IMAGE =====
   draw() {
     const ctx = this.ctx;
-    const cs = this.cs;
     const s = this.cv.width;
     ctx.clearRect(0, 0, s, s);
 
-    // Rich dark wood background with subtle gradient
-    const bg = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s * 0.9);
-    bg.addColorStop(0, '#1e1e36');
-    bg.addColorStop(0.5, '#16162a');
-    bg.addColorStop(1, '#0e0e1e');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, s, s);
-
-    this.drawBoard(ctx, cs);
-    this.drawTokens(ctx, cs);
-  }
-
-  // Draw a rounded rect path (no fill, just path)
-  private rr(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.arcTo(x + w, y, x + w, y + r, r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-    ctx.lineTo(x + r, y + h);
-    ctx.arcTo(x, y + h, x, y + h - r, r);
-    ctx.lineTo(x, y + r);
-    ctx.arcTo(x, y, x + r, y, r);
-    ctx.closePath();
-  }
-
-  // Fill rounded rect
-  private fr(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, fill: string) {
-    this.rr(ctx, x, y, w, h, r);
-    ctx.fillStyle = fill;
-    ctx.fill();
-  }
-
-  // Draw a cell with rounded corners
-  private cell(ctx: CanvasRenderingContext2D, cx: number, cy: number, cs: number, fill: string, border: string, radius: number = 0) {
-    const pad = 1;
-    const w = cs - pad * 2;
-    const h = cs - pad * 2;
-    if (radius > 0) {
-      this.fr(ctx, cx + pad, cy + pad, w, h, radius, fill);
-      this.rr(ctx, cx + pad, cy + pad, w, h, radius);
+    // Draw board.png as background
+    if (this.boardLoaded && this.boardImg) {
+      ctx.drawImage(this.boardImg, 0, 0, s, s);
     } else {
-      ctx.fillStyle = fill;
-      ctx.fillRect(cx + pad, cy + pad, w, h);
-      ctx.beginPath();
-      ctx.rect(cx + pad, cy + pad, w, h);
+      // Fallback dark bg while loading
+      ctx.fillStyle = '#0b1320';
+      ctx.fillRect(0, 0, s, s);
     }
-    ctx.strokeStyle = border;
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
+
+    this.drawTokens(ctx, this.cs);
   }
 
-  // Draw circle token
+  // ===== TOKEN DRAWING =====
   private circle(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, fill: string) {
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fillStyle = fill;
-    ctx.fill();
-  }
-
-  // Draw star shape
-  private star(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, col: string) {
-    ctx.fillStyle = col;
-    ctx.font = `${r * 2}px sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('★', cx, cy);
-  }
-
-  drawBoard(ctx: CanvasRenderingContext2D, cs: number) {
-    const s = this.cv.width;
-
-    // Board outer frame shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fillRect(0, 0, s, 3);
-    ctx.fillRect(0, s - 3, s, 3);
-    ctx.fillRect(0, 0, 3, s);
-    ctx.fillRect(s - 3, 0, 3, s);
-
-    // Draw the cross-shaped track (E cells)
-    for (let r = 0; r < 15; r++) {
-      for (let c = 0; c < 15; c++) {
-        const cellVal = BM[r][c];
-        const px = c * cs;
-        const py = r * cs;
-
-        if (cellVal === 'E') {
-          // Track cell - cream colored
-          this.cell(ctx, px, py, cs, '#2a2818', 'rgba(255,255,255,0.06)', 0);
-          // Inner groove
-          ctx.fillStyle = 'rgba(0,0,0,0.15)';
-          ctx.fillRect(px + cs * 0.15, py + cs * 0.15, cs * 0.7, cs * 0.7);
-          ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-          ctx.lineWidth = 0.5;
-          ctx.strokeRect(px + cs * 0.15, py + cs * 0.15, cs * 0.7, cs * 0.7);
-        } else if (cellVal === 'S') {
-          // Safe cell - golden glow
-          const alpha = 0.3 + Math.sin(this.frame * 0.05) * 0.1;
-          ctx.fillStyle = `rgba(252,213,53,${alpha})`;
-          ctx.fillRect(px, py, cs, cs);
-          this.cell(ctx, px, py, cs, '#3a3010', 'rgba(252,213,53,0.3)', 0);
-          this.star(ctx, px + cs / 2, py + cs / 2, cs * 0.22, '#fcd535');
-        } else if (cellVal === 'r') {
-          this.cell(ctx, px, py, cs, 'rgba(255,92,92,0.15)', 'rgba(255,92,92,0.3)', 0);
-        } else if (cellVal === 'g') {
-          this.cell(ctx, px, py, cs, 'rgba(69,209,133,0.15)', 'rgba(69,209,133,0.3)', 0);
-        } else if (cellVal === 'y') {
-          this.cell(ctx, px, py, cs, 'rgba(252,213,53,0.15)', 'rgba(252,213,53,0.3)', 0);
-        } else if (cellVal === 'b') {
-          this.cell(ctx, px, py, cs, 'rgba(92,156,255,0.15)', 'rgba(92,156,255,0.3)', 0);
-        } else if (cellVal === 'H') {
-          const qi = qc(c, r);
-          if (qi >= 0 && qi < this.pc) {
-            this.cell(ctx, px, py, cs, C[qi].fill, C[qi].dark, 0);
-          } else {
-            this.cell(ctx, px, py, cs, '#12122a', '#1a1a3a', 0);
-          }
-        } else if ('GRYB'.includes(cellVal)) {
-          // Token starting spots inside home
-          const qi = qc(c, r);
-          this.cell(ctx, px, py, cs, C[qi].fill, C[qi].dark, 0);
-          const cpx = px + cs / 2;
-          const cpy = py + cs / 2;
-          // Draw circle base
-          this.circle(ctx, cpx, cpy, cs * 0.3, 'rgba(0,0,0,0.4)');
-          this.circle(ctx, cpx, cpy, cs * 0.26, C[qi].bg);
-          ctx.strokeStyle = C[qi].light;
-          ctx.lineWidth = 1;
-          this.circle(ctx, cpx, cpy, cs * 0.26, 'rgba(0,0,0,0)');
-          ctx.stroke();
-        } else if (cellVal === 'C') {
-          this.drawCenter(ctx, px, py, cs, c, r);
-        }
-      }
-    }
-
-    // Home base borders with rounded corners
-    [[0, 9, 0], [0, 0, 1], [9, 0, 2], [9, 9, 3]].forEach(([sc, sr, ci]) => {
-      if (ci >= this.pc) return;
-      const bx = sc * cs;
-      const by = sr * cs;
-      const bw = 6 * cs;
-
-      // Outer border
-      this.rr(ctx, bx + 2, by + 2, bw - 4, bw - 4, cs * 0.8);
-      ctx.strokeStyle = C[ci].bg;
-      ctx.lineWidth = 2.5;
-      ctx.shadowColor = C[ci].bg;
-      ctx.shadowBlur = 8;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-
-      // Inner decorative line
-      this.rr(ctx, bx + cs * 0.8, by + cs * 0.8, bw - cs * 1.6, bw - cs * 1.6, cs * 0.5);
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    });
-
-    // Start markers
-    [0, 13, 26, 39].forEach((idx, i) => {
-      if (i >= this.pc) return;
-      const [tc, tr] = TK[idx];
-      const cx = (tc + 0.5) * cs;
-      const cy = (tr + 0.5) * cs;
-      this.star(ctx, cx, cy, cs * 0.2, C[i].bg);
-    });
-  }
-
-  drawCenter(ctx: CanvasRenderingContext2D, px: number, py: number, cs: number, col: number, row: number) {
-    if (col === 7 && row === 7) {
-      // Finish/winning square - decorative
-      ctx.fillStyle = '#1a1a30';
-      ctx.fillRect(px, py, cs, cs);
-      const cx = px + cs / 2;
-      const cy = py + cs / 2;
-
-      // Glow behind
-      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, cs * 0.5);
-      grd.addColorStop(0, 'rgba(252,213,53,0.3)');
-      grd.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = grd;
-      ctx.fillRect(px, py, cs, cs);
-
-      // Crown icon
-      ctx.fillStyle = '#fcd535';
-      ctx.font = `bold ${Math.floor(cs * 0.45)}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('👑', cx, cy);
-      return;
-    }
-    let tc = '#1a1a28';
-    if (row < 7) tc = 'rgba(252,213,53,0.12)';
-    else if (row > 7) tc = 'rgba(255,92,92,0.12)';
-    else if (col < 7) tc = 'rgba(69,209,133,0.12)';
-    else tc = 'rgba(92,156,255,0.12)';
-    ctx.fillStyle = tc;
-    ctx.fillRect(px + 1, py + 1, cs - 2, cs - 2);
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = fill; ctx.fill();
   }
 
   drawTokens(ctx: CanvasRenderingContext2D, cs: number) {

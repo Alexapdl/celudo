@@ -6,6 +6,7 @@ import { useUserState, BASE_APY } from "@/hooks/useUserState";
 import { useGameController } from "@/hooks/useGameController";
 import BackgroundCanvas from "./components/BackgroundCanvas";
 import Header from "@/components/ui/Header";
+import BottomNav from "@/components/ui/BottomNav";
 import ToastContainer from "@/components/ui/ToastContainer";
 import HomeScreen from "@/components/home/HomeScreen";
 import LobbyScreen from "@/components/lobby/LobbyScreen";
@@ -14,6 +15,7 @@ import VictoryModal from "@/components/game/VictoryModal";
 import StakingScreen from "@/components/staking/StakingScreen";
 import ProfileScreen from "@/components/profile/ProfileScreen";
 import { useSound } from "@/lib/sound";
+import { soundManager } from "@/lib/sound";
 import type { RecentGame } from "@/hooks/useUserState";
 
 interface Tournament {
@@ -39,6 +41,14 @@ type View = "home" | "play" | "staking" | "profile" | "game";
 
 export default function Home() {
   useSound();
+
+  useEffect(() => {
+    const timer = setTimeout(() => soundManager.startBGM(), 500);
+    return () => {
+      soundManager.stopBGM();
+      clearTimeout(timer);
+    };
+  }, []);
 
   const { toasts, showToast } = useToast();
   const user = useUserState(showToast);
@@ -202,7 +212,6 @@ export default function Home() {
             tournaments={tournaments}
             isConnected={user.effectiveConnected}
             onNavigatePlay={() => navigate("play")}
-            onNavigateStaking={() => navigate("staking")}
             onJoinTournament={joinTournament}
             onActivateDemo={user.activateDemoMode}
           /></div>
@@ -282,11 +291,7 @@ export default function Home() {
       <BackgroundCanvas />
 
       <Header
-        currentView={currentView}
-        onNavigate={(view) => {
-          setCurrentView(view);
-          window.scrollTo(0, 0);
-        }}
+        onLogoClick={() => navigate("home")}
         onWalletConnect={user.handleWalletConnect}
         onWalletDisconnect={user.handleWalletDisconnect}
       />
@@ -303,6 +308,10 @@ export default function Home() {
       </main>
 
       <ToastContainer toasts={toasts} />
+
+      {currentView !== "game" && (
+        <BottomNav currentView={currentView} onNavigate={(v) => navigate(v)} />
+      )}
 
       <VictoryModal
         isOpen={game.isGameOverModalOpen}
