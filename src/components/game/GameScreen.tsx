@@ -1,32 +1,27 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, AlertTriangle, Clock, Dices, Users } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Clock, Users } from "lucide-react";
 import { Player, C } from "@/app/ludoEngine";
 import DiceAnimation from "./DiceAnimation";
-import { soundManager } from "@/lib/sound";
 
 interface GameScreenProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   gamePlayers: Player[]; currentPlayerIndex: number; diceValue: number;
   isRolling: boolean; rollButtonDisabled: boolean; gameTimerText: string;
-  gameLog: string[]; gameMode: "free" | "tournament"; gamePtsEarned: number;
+  gameMode: "free" | "tournament"; gamePtsEarned: number;
   onRollDice: () => void; onLeaveGame: () => void;
 }
 
-export default function GameScreen({ canvasRef, gamePlayers, currentPlayerIndex, diceValue, isRolling, rollButtonDisabled, gameTimerText, gameLog, gameMode, gamePtsEarned, onRollDice, onLeaveGame }: GameScreenProps) {
-  const logRef = useRef<HTMLDivElement>(null);
+export default function GameScreen({ canvasRef, gamePlayers, currentPlayerIndex, diceValue, isRolling, rollButtonDisabled, gameTimerText, gameMode, gamePtsEarned, onRollDice, onLeaveGame }: GameScreenProps) {
   const [showConfirm, setShowConfirm] = useState(false);
-
-  useEffect(() => { if (logRef.current) logRef.current.scrollTop = 0; }, [gameLog]);
-  useEffect(() => { if (currentPlayerIndex === 0 && !isRolling) soundManager.toastSound("info"); }, [currentPlayerIndex, isRolling]);
 
   return (
     <motion.div className="mobile-game" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
       {/* === TOP CARD: Game Info === */}
       <div className="game-card game-card-top">
-        <motion.button className="btn btn-sm btn-ghost" onClick={() => { soundManager.buttonClick(); setShowConfirm(true); }} whileTap={{ scale: 0.95 }}>
+        <motion.button className="btn btn-sm btn-ghost" onClick={() => setShowConfirm(true)} whileTap={{ scale: 0.95 }}>
           <ArrowLeft size={14} /> Leave
         </motion.button>
         <div className="game-card-top-center">
@@ -79,16 +74,6 @@ export default function GameScreen({ canvasRef, gamePlayers, currentPlayerIndex,
         <DiceAnimation value={diceValue} isRolling={isRolling} disabled={rollButtonDisabled || currentPlayerIndex !== 0} onRoll={onRollDice} />
       </div>
 
-      {/* === LOG CARD === */}
-      <div className="game-card game-card-log" ref={logRef}>
-        {gameLog.map((l, i) => (
-          <motion.p key={i} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.1 }}>
-            {l}
-          </motion.p>
-        ))}
-        {gameLog.length === 0 && <p className="text-muted" style={{ textAlign: "center", padding: "2px 0" }}>Roll to begin!</p>}
-      </div>
-
       {/* === LEAVE CONFIRMATION === */}
       <AnimatePresence>
         {showConfirm && (
@@ -98,8 +83,8 @@ export default function GameScreen({ canvasRef, gamePlayers, currentPlayerIndex,
               <h2>Leave Game?</h2>
               <p>You will lose all progress in this match.</p>
               <div className="modal-btns">
-                <button className="btn btn-primary" onClick={() => { soundManager.buttonClick(); setShowConfirm(false); onLeaveGame(); }}>Leave</button>
-                <button className="btn btn-ghost" onClick={() => { soundManager.buttonClick(); setShowConfirm(false); }}>Cancel</button>
+                <button className="btn btn-primary" onClick={() => { setShowConfirm(false); onLeaveGame(); }}>Leave</button>
+                <button className="btn btn-ghost" onClick={() => setShowConfirm(false)}>Cancel</button>
               </div>
             </motion.div>
           </motion.div>

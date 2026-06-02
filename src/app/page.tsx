@@ -245,7 +245,6 @@ export default function Home() {
             isRolling={game.rollButtonDisabled && game.rollButtonText === "Rolling..."}
             rollButtonDisabled={game.rollButtonDisabled}
             gameTimerText={game.gameTimerText}
-            gameLog={game.gameLog}
             gameMode={gameMode}
             gamePtsEarned={game.gamePtsEarned}
             onRollDice={game.handleRollDice}
