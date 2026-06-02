@@ -1,0 +1,16 @@
+=== CELUDO AI ASSET GENERATION PROMPTS ===
+
+=== 1. 3D DICE (for dice roll animation) ===
+A single 3D six-sided game dice, isometric view, cel-shaded cartoon style with clean outlines, white body with dark navy dot pips, soft drop shadow beneath, playful glossy finish, slight rounded edges, floating on a transparent background, gaming app UI asset, bright studio lighting, 4k, game-ready asset
+
+=== 2. LUDO BOARD TEXTURE (board background) ===
+A colorful Ludo board game board viewed from top-down, clean geometric layout, four colored home corners - red, green, yellow, blue - with a white cross-shaped track in the center, golden crown symbol in the middle, dark wooden border frame, subtle wood grain texture, board game aesthetic, flat vector style with soft shadows, 1024x1024, mobile game background, transparent center area for overlay
+
+=== 3. TOKEN PIECES (player pawns) ===
+Four colorful game pawn/piece tokens arranged in a row, isometric 3D style: red pawn, green pawn, yellow pawn, blue pawn, each with a glossy spherical top and flat circular base, cel-shaded with crisp highlights, cast shadow, game UI asset sheet, isolated on transparent background, mobile game style, 4k
+
+=== 4. HOMEPAGE HERO BACKGROUND ===
+Dark futuristic gaming background for a web3 mobile game, deep navy and dark purple gradient background, subtle hexagonal grid pattern overlay, glowing green and gold accent particles floating, a stylized Ludo board silhouette faintly visible in the center with soft neon glow, minimal tech dots connected by lines, crypto gaming aesthetic, mobile portrait 9:16 aspect ratio, no text, clean modern style, dark mode UI background
+
+=== 5. BANNER / HERO GRAPHIC ===
+A bold mobile gaming promotional banner for "Play Ludo, Boost Your Yield", stylized golden dice rolling with motion blur, green upward trending chart arrow, glowing trophy icon, dark navy background with subtle particle effects, crypto gaming aesthetic, wordmark area reserved at center, 1200x630 social banner format, glowing neon green accents, professional esports style
