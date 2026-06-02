@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/useToast";
 import { useUserState, BASE_APY } from "@/hooks/useUserState";
 import { useGameController } from "@/hooks/useGameController";
@@ -42,18 +42,20 @@ type View = "home" | "play" | "staking" | "profile" | "game";
 export default function Home() {
   useSound();
 
+  const bgmStarted = useRef(false);
   useEffect(() => {
-    const timer = setTimeout(() => soundManager.startBGM(), 500);
-    return () => {
-      soundManager.stopBGM();
-      clearTimeout(timer);
-    };
+    if (!bgmStarted.current) {
+      bgmStarted.current = true;
+      const timer = setTimeout(() => soundManager.startBGM(), 800);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   const { toasts, showToast } = useToast();
   const user = useUserState(showToast);
 
   const [currentView, setCurrentView] = useState<View>("home");
+  const [viewKey, setViewKey] = useState(0);
 
   const [cashBetAmount, setCashBetAmount] = useState<string>("0.1");
   const [cashBetMode, setCashBetMode] = useState<"solo" | "duo" | "4player">("solo");
@@ -93,6 +95,7 @@ export default function Home() {
       game.resetGameState();
     }
     setCurrentView(view);
+    setViewKey((k) => k + 1);
     window.scrollTo(0, 0);
   }, [game]);
 
@@ -204,7 +207,7 @@ export default function Home() {
     switch (currentView) {
       case "home":
         return (
-          <div className="view"><HomeScreen
+          <div className="view" key={`home-${viewKey}`}><HomeScreen
             points={user.points}
             effectiveAPY={user.effectiveAPY}
             currentTierName={user.currentTier.name}
@@ -218,7 +221,7 @@ export default function Home() {
         );
       case "play":
         return (
-          <div className="view"><LobbyScreen
+          <div className="view" key={`play-${viewKey}`}><LobbyScreen
             isConnected={user.effectiveConnected}
             cashBetAmount={cashBetAmount}
             cashBetMode={cashBetMode}
@@ -233,6 +236,7 @@ export default function Home() {
         );
       case "game":
         return (
+          <div key={`game-${viewKey}`} style={{ height: "100%" }}>
           <GameScreen
             canvasRef={game.canvasRef}
             gamePlayers={game.gamePlayers}
@@ -246,11 +250,11 @@ export default function Home() {
             gamePtsEarned={game.gamePtsEarned}
             onRollDice={game.handleRollDice}
             onLeaveGame={() => navigate("play")}
-          />
+          /></div>
         );
       case "staking":
         return (
-          <div className="view"><StakingScreen
+          <div className="view" key={`staking-${viewKey}`}><StakingScreen
             effectiveAPY={user.effectiveAPY}
             baseAPY={BASE_APY}
             currentTierBoost={user.currentTier.boost}
@@ -267,7 +271,7 @@ export default function Home() {
         );
       case "profile":
         return (
-          <div className="view"><ProfileScreen
+          <div className="view" key={`profile-${viewKey}`}><ProfileScreen
             isConnected={user.effectiveConnected}
             walletAddress={user.effectiveAddress}
             currentTierName={user.currentTier.name}

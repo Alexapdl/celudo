@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Dices } from "lucide-react";
+import { motion } from "framer-motion";
 import { soundManager } from "@/lib/sound";
 
 interface DiceAnimationProps {
@@ -10,7 +9,7 @@ interface DiceAnimationProps {
 }
 
 export default function DiceAnimation({ value, isRolling, disabled, onRoll }: DiceAnimationProps) {
-  const [displayValue, setDisplayValue] = useState(value);
+  const [displayValue, setDisplayValue] = useState(value || 1);
   const [phase, setPhase] = useState<"idle" | "rolling" | "landed">("idle");
 
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -21,56 +20,51 @@ export default function DiceAnimation({ value, isRolling, disabled, onRoll }: Di
       const iv = setInterval(() => {
         setDisplayValue(Math.floor(Math.random() * 6) + 1);
         n++;
-        if (n >= 8) {
-          clearInterval(iv);
-          setPhase("landed");
-          setDisplayValue(value);
-          setTimeout(() => setPhase("idle"), 500);
-        }
-      }, 100);
+        if (n >= 12) { clearInterval(iv); setPhase("landed"); setDisplayValue(value || 1); setTimeout(() => setPhase("idle"), 600); }
+      }, 70);
       return () => clearInterval(iv);
     }
-    setDisplayValue(value);
+    setDisplayValue(value || 1);
   }, [isRolling, value]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
-  const handleClick = useCallback(() => {
+  const handleRoll = useCallback(() => {
     if (!disabled && !isRolling) { soundManager.buttonClick(); onRoll(); }
   }, [disabled, isRolling, onRoll]);
 
-  const diceV = {
-    idle: { rotate: 0, scale: 1 },
-    rolling: { rotate: [0, 180, 360, 540, 720], scale: [1, 0.85, 1.1, 0.9, 1], transition: { duration: 0.8, ease: "easeInOut" as const } },
-    landed: { rotate: 0, scale: [1, 1.25, 1], transition: { duration: 0.4, type: "spring" as const, stiffness: 300, damping: 12 } },
+  const isActionable = !disabled && !isRolling;
+  const v = displayValue || 1;
+
+  // Standard dice face patterns (3x3 grid: tl,tc,tr, ml,c,mr, bl,bc,br)
+  const face: Record<number, boolean[]> = {
+    1: [0,0,0, 0,1,0, 0,0,0].map(Boolean),
+    2: [0,0,1, 0,0,0, 1,0,0].map(Boolean),
+    3: [0,0,1, 0,1,0, 1,0,0].map(Boolean),
+    4: [1,0,1, 0,0,0, 1,0,1].map(Boolean),
+    5: [1,0,1, 0,1,0, 1,0,1].map(Boolean),
+    6: [1,0,1, 1,0,1, 1,0,1].map(Boolean),
   };
+  const dots = face[v] || face[1];
 
   return (
-    <div className="dice-area">
-      <motion.div
-        className="dice-display"
+    <div className="dice-roll-container">
+      <motion.button
+        className={`dice-btn ${phase}`}
+        onClick={handleRoll}
+        disabled={!isActionable}
         animate={phase}
-        variants={diceV}
-        style={{
-          borderColor: phase === "landed" ? "var(--gold-bright)" : "var(--gold)",
-          boxShadow: phase === "landed" ? "0 0 20px rgba(201,168,76,0.3)" : "none",
+        variants={{
+          idle: { rotate: 0, scale: 1 },
+          rolling: { rotate: [0, -180, -360, -540, -720], scale: [1, 1.06, 0.94, 1.04, 1], transition: { duration: 0.85, ease: "easeInOut" } },
+          landed: { rotate: 0, scale: [1, 1.16, 1], transition: { duration: 0.4, type: "spring", stiffness: 300, damping: 12 } },
         }}
       >
-        <AnimatePresence mode="wait">
-          <motion.span key={displayValue + (isRolling ? "-r" : "")} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} transition={{ duration: 0.06 }}>
-            {displayValue}
-          </motion.span>
-        </AnimatePresence>
-      </motion.div>
-
-      <motion.button
-        className="btn btn-dice"
-        onClick={handleClick}
-        disabled={disabled || isRolling}
-        whileTap={!disabled && !isRolling ? { scale: 0.94 } : {}}
-        animate={disabled || isRolling ? { opacity: 0.5 } : { opacity: 1 }}
-      >
-        {isRolling ? "Rolling..." : <><Dices size={18} /> Roll</>}
+        <div className="dice-dots">
+          {dots.map((on, i) => (
+            <span key={i} className={`dot ${on ? "" : "off"}`} />
+          ))}
+        </div>
       </motion.button>
+      <span className="dice-hint">{isRolling ? "Rolling..." : isActionable ? "Tap dice" : "Wait..."}</span>
     </div>
   );
 }

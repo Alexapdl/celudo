@@ -7,7 +7,8 @@ class SoundManager {
   private enabled = true;
   private bgmPlaying = false;
   private bgmGain: GainNode | null = null;
-  private bgmTimeout: ReturnType<typeof setTimeout> | null = null;
+  private bgmDrone: OscillatorNode | null = null;
+  private bgmInterval: ReturnType<typeof setInterval> | null = null;
 
   private getCtx(): AudioContext {
     if (!this.ctx) {
@@ -43,53 +44,56 @@ class SoundManager {
   toastSound = (type: "success" | "error" | "info") => { const f = type === "success" ? 660 : type === "error" ? 165 : 494; this.tone(f, "sine", 0.12, 0.06); };
 
   // ===== PIRATE SEA SHANTY BGM =====
-  // A minor pentatonic + dorian flavor, slow tempo
   startBGM = () => {
     if (!this.enabled || this.bgmPlaying) return;
     this.bgmPlaying = true;
     try {
       const ctx = this.getCtx();
+
+      // Master gain
       this.bgmGain = ctx.createGain();
-      this.bgmGain.gain.setValueAtTime(0.035, ctx.currentTime);
+      this.bgmGain.gain.setValueAtTime(0.03, ctx.currentTime);
       this.bgmGain.connect(ctx.destination);
 
-      // Sea shanty melody: A C D E G A (minor pentatonic)
-      // Low slow drone underneath
+      // Continuous low drone
+      this.bgmDrone = ctx.createOscillator();
+      this.bgmDrone.type = "sine";
+      this.bgmDrone.frequency.setValueAtTime(55, ctx.currentTime); // A1 bass
+      this.bgmDrone.connect(this.bgmGain);
+      this.bgmDrone.start();
+
+      // Melody: A minor pentatonic sea shanty
       const melody: { n: number; d: number }[] = [
-        { n: 440, d: 0.55 }, { n: 0, d: 0.1 }, { n: 523, d: 0.35 }, { n: 587, d: 0.45 }, { n: 523, d: 0.25 },
-        { n: 440, d: 0.5 }, { n: 0, d: 0.1 }, { n: 392, d: 0.45 }, { n: 440, d: 0.35 }, { n: 523, d: 0.55 },
-        { n: 0, d: 0.1 }, { n: 587, d: 0.4 }, { n: 659, d: 0.45 }, { n: 587, d: 0.3 }, { n: 523, d: 0.5 },
-        { n: 0, d: 0.15 }, { n: 440, d: 0.55 }, { n: 392, d: 0.3 }, { n: 330, d: 0.6 },
-        { n: 0, d: 0.1 }, { n: 587, d: 0.35 }, { n: 523, d: 0.3 }, { n: 440, d: 0.5 }, { n: 392, d: 0.4 },
-        { n: 440, d: 0.6 }, { n: 0, d: 0.3 },
+        { n: 440, d: 0.5 }, { n: 0, d: 0.08 }, { n: 523, d: 0.32 }, { n: 587, d: 0.42 }, { n: 523, d: 0.22 },
+        { n: 440, d: 0.48 }, { n: 0, d: 0.08 }, { n: 392, d: 0.42 }, { n: 440, d: 0.32 }, { n: 523, d: 0.5 },
+        { n: 0, d: 0.08 }, { n: 587, d: 0.38 }, { n: 659, d: 0.42 }, { n: 587, d: 0.28 }, { n: 523, d: 0.48 },
+        { n: 0, d: 0.1 }, { n: 440, d: 0.5 }, { n: 392, d: 0.28 }, { n: 330, d: 0.55 },
+        { n: 0, d: 0.08 }, { n: 587, d: 0.32 }, { n: 523, d: 0.28 }, { n: 440, d: 0.48 }, { n: 392, d: 0.38 },
+        { n: 440, d: 0.55 }, { n: 0, d: 0.25 },
       ];
       const loopLen = melody.reduce((s, m) => s + m.d, 0);
 
-      // Drone bass
-      const playDrone = () => {
+      const playMelody = () => {
         if (!this.bgmPlaying) return;
-        this.tone(110, "sine", loopLen * 0.95, 0.025, 0, this.bgmGain!);
-        this.tone(110, "triangle", loopLen * 0.5, 0.012, loopLen * 0.48, this.bgmGain!);
-      };
-
-      const playLoop = () => {
-        if (!this.bgmPlaying) return;
-        playDrone();
         let t = 0;
         melody.forEach(({ n, d }) => {
-          if (n > 0) this.tone(n, "sine", d * 0.7, 0.03, t, this.bgmGain!);
+          if (n > 0) this.tone(n, "triangle", d * 0.7, 0.025, t, this.bgmGain!);
           t += d;
         });
-        this.bgmTimeout = setTimeout(playLoop, loopLen * 1000);
       };
-      playLoop();
+
+      playMelody();
+      this.bgmInterval = setInterval(playMelody, loopLen * 1000);
     } catch { /* ignore */ }
   };
 
   stopBGM = () => {
     this.bgmPlaying = false;
-    if (this.bgmTimeout) { clearTimeout(this.bgmTimeout); this.bgmTimeout = null; }
-    try { if (this.bgmGain) { this.bgmGain.disconnect(); this.bgmGain = null; } } catch { /* ignore */ }
+    if (this.bgmInterval) { clearInterval(this.bgmInterval); this.bgmInterval = null; }
+    try {
+      if (this.bgmDrone) { this.bgmDrone.stop(); this.bgmDrone.disconnect(); this.bgmDrone = null; }
+      if (this.bgmGain) { this.bgmGain.disconnect(); this.bgmGain = null; }
+    } catch { /* ignore */ }
   };
 
   get enabledStatus() { return this.enabled; }
