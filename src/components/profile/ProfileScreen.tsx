@@ -24,6 +24,15 @@ interface ProfileScreenProps {
   recentGames: RecentGame[];
 }
 
+const tiers = [
+  { name: "None", min: 0, boost: 0 },
+  { name: "🥉 Bronze", min: 100, boost: 0.5 },
+  { name: "🥈 Silver", min: 500, boost: 1.0 },
+  { name: "🥇 Gold", min: 2000, boost: 2.0 },
+  { name: "💎 Diamond", min: 10000, boost: 3.0 },
+  { name: "👑 Legend", min: 50000, boost: 5.0 },
+];
+
 export default function ProfileScreen({
   isConnected,
   walletAddress,
@@ -163,12 +172,3 @@ export default function ProfileScreen({
     </div>
   );
 }
-
-const tiers = [
-  { name: "None", min: 0, boost: 0 },
-  { name: "🥉 Bronze", min: 100, boost: 0.5 },
-  { name: "🥈 Silver", min: 500, boost: 1.0 },
-  { name: "🥇 Gold", min: 2000, boost: 2.0 },
-  { name: "💎 Diamond", min: 10000, boost: 3.0 },
-  { name: "👑 Legend", min: 50000, boost: 5.0 },
-];
