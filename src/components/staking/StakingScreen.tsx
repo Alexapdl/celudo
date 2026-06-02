@@ -119,7 +119,7 @@ export default function StakingScreen({
             </motion.button>
           </div>
         </motion.div>
-        <motion.div className="stake-action-card" whileHover={{ y: -4 }}>
+        <motion.div className="stake-action-card " whileHover={{ y: -4 }}>
           <h3>📤 Unstake</h3>
           <div className="input-group">
             <input
