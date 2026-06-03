@@ -80,6 +80,8 @@ export class LudoGame {
   private callbacks: GameCallbacks;
   private boardImg: HTMLImageElement | null = null;
   private boardLoaded = false;
+  private boardOffsetX = 0;
+  private boardOffsetY = 0;
 
   constructor(canvas: HTMLCanvasElement, pc: number = 4, callbacks: GameCallbacks) {
     this.cv = canvas;
@@ -122,6 +124,8 @@ export class LudoGame {
     this.cv.width = s;
     this.cv.height = s;
     this.cs = s / 15;
+    this.boardOffsetX = this.cs * 0.3;
+    this.boardOffsetY = this.cs * 0.3;
   }
 
   startTimer() {
@@ -151,7 +155,7 @@ export class LudoGame {
 
   // ===== COORDINATE HELPERS =====
   pix(col: number, row: number): Point {
-    return { x: (col + 0.5) * this.cs, y: (row + 0.5) * this.cs };
+    return { x: (col + 0.5) * this.cs + this.boardOffsetX, y: (row + 0.5) * this.cs + this.boardOffsetY };
   }
 
   pos2pix(pi: number, pos: number): Point {
