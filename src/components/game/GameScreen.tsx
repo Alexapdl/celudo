@@ -14,12 +14,39 @@ interface GameScreenProps {
   onRollDice: () => void; onLeaveGame: () => void;
 }
 
-export default function GameScreen({ canvasRef, gamePlayers, currentPlayerIndex, diceValue, isRolling, rollButtonDisabled, gameTimerText, gameMode, gamePtsEarned, onRollDice, onLeaveGame }: GameScreenProps) {
+function TokenDots({ tokens, color }: { tokens: number[]; color: string }) {
+  return (
+    <div style={{ display: "flex", gap: 3, marginTop: 3 }}>
+      {tokens.map((pos, i) => {
+        const finished = pos === 57;
+        const onTrack = pos >= 0 && pos < 57;
+        return (
+          <div
+            key={i}
+            title={finished ? "Home" : onTrack ? `Pos ${pos}` : "Base"}
+            style={{
+              width: 8, height: 8, borderRadius: "50%",
+              background: finished ? color : onTrack ? color + "99" : "rgba(255,255,255,0.12)",
+              border: `1px solid ${finished ? color : onTrack ? color + "cc" : "rgba(255,255,255,0.2)"}`,
+              transition: "all 0.3s",
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+export default function GameScreen({
+  canvasRef, gamePlayers, currentPlayerIndex, diceValue,
+  isRolling, rollButtonDisabled, gameTimerText, gameMode, gamePtsEarned,
+  onRollDice, onLeaveGame,
+}: GameScreenProps) {
   const [showConfirm, setShowConfirm] = useState(false);
 
   return (
     <motion.div className="mobile-game" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-      {/* === TOP CARD: Game Info === */}
+      {/* === TOP CARD === */}
       <div className="game-card game-card-top">
         <motion.button className="btn btn-sm btn-ghost" onClick={() => setShowConfirm(true)} whileTap={{ scale: 0.95 }}>
           <ArrowLeft size={14} /> Leave
@@ -31,19 +58,19 @@ export default function GameScreen({ canvasRef, gamePlayers, currentPlayerIndex,
         <span className="game-points-display">+{gamePtsEarned}</span>
       </div>
 
-      {/* === MAIN BOARD === */}
+      {/* === BOARD === */}
       <div className="game-card game-card-board">
         <canvas ref={canvasRef} id="ludo-canvas" width="600" height="600" />
       </div>
 
-      {/* === PLAYERS & TURN CARD === */}
+      {/* === PLAYERS CARD === */}
       <div className="game-card game-card-players">
         <div className="game-card-label"><Users size={12} /> Players</div>
         <div className="game-players-row">
           {gamePlayers.map((player, idx) => {
             const d = C[idx];
             const isActive = idx === currentPlayerIndex;
-            const status = player.done ? "WIN" : player.pos === -1 ? "Base" : player.pos >= 52 ? "Home" : `+${player.pos}`;
+            const finishedCount = player.tokens ? player.tokens.filter(p => p === 57).length : 0;
             return (
               <motion.div
                 key={idx}
@@ -57,21 +84,33 @@ export default function GameScreen({ canvasRef, gamePlayers, currentPlayerIndex,
                     {idx === 0 ? "U" : d.name[0]}
                   </span>
                 </div>
-                <span className="game-player-status">{status}</span>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <span className="game-player-status">{finishedCount}/4</span>
+                  {player.tokens && <TokenDots tokens={player.tokens} color={d.bg} />}
+                </div>
                 {isActive && <span className="game-player-turn">TURN</span>}
               </motion.div>
             );
           })}
         </div>
-        <motion.div className="turn-bar" style={{ background: `linear-gradient(90deg, ${C[currentPlayerIndex]?.bg}44, ${C[currentPlayerIndex]?.bg}08)` }}
-          animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }}>
+        <motion.div
+          className="turn-bar"
+          style={{ background: `linear-gradient(90deg, ${C[currentPlayerIndex]?.bg}44, ${C[currentPlayerIndex]?.bg}08)` }}
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
           {currentPlayerIndex === 0 ? "Your turn — roll the dice!" : `${C[currentPlayerIndex]?.name || ""} is thinking...`}
         </motion.div>
       </div>
 
       {/* === DICE CARD === */}
       <div className="game-card game-card-dice">
-        <DiceAnimation value={diceValue} isRolling={isRolling} disabled={rollButtonDisabled || currentPlayerIndex !== 0} onRoll={onRollDice} />
+        <DiceAnimation
+          value={diceValue}
+          isRolling={isRolling}
+          disabled={rollButtonDisabled || currentPlayerIndex !== 0}
+          onRoll={onRollDice}
+        />
       </div>
 
       {/* === LEAVE CONFIRMATION === */}
