@@ -20,6 +20,7 @@ export interface GameCallbacks {
   onDiceRollEnd: (value: number) => void;
   onRollButtonState: (text: string, disabled: boolean) => void;
   onGameOver: (winnerIndex: number, isHuman: boolean) => void;
+  onBonusRoll?: () => void;
 }
 
 export const C: Record<number, { name: string; bg: string; light: string; dark: string; fill: string; home: string }> = {
@@ -201,7 +202,10 @@ export class LudoGame {
     const pos = this.pl[pi].tokens[tokenIdx];
     const path: Point[] = [this.pos2pix(pi, tokenIdx, pos)];
     if (pos === -1) {
-      path.push(this.pos2pix(pi, tokenIdx, 0));
+      const from = this.pos2pix(pi, tokenIdx, -1);
+      const to = this.pos2pix(pi, tokenIdx, 0);
+      const mid = { x: (from.x + to.x) / 2, y: Math.min(from.y, to.y) - this.cs * 1.4 };
+      path.push(mid, to);
       return path;
     }
     let cur = pos;
@@ -244,11 +248,35 @@ export class LudoGame {
   }
 
   // ===== GAME LOGIC =====
+  hasOpponentBlockade(currentPlayer: number, absCell: number): boolean {
+    for (let pi = 0; pi < this.pc; pi++) {
+      if (pi === currentPlayer) continue;
+      let count = 0;
+      for (const pos of this.pl[pi].tokens) {
+        if (pos >= 0 && pos < 52 && (SP[pi] + pos) % CELL_COUNT === absCell) {
+          count++;
+        }
+      }
+      if (count >= 2) return true;
+    }
+    return false;
+  }
+
   canMove(pi: number, ti: number, d: number): boolean {
     const pos = this.pl[pi].tokens[ti];
     if (pos === 57) return false;
-    if (pos === -1) return d === 6;
+    if (pos === -1) {
+      if (d !== 6) return false;
+      const startAbs = SP[pi] % CELL_COUNT;
+      if (this.hasOpponentBlockade(pi, startAbs)) return false;
+      return true;
+    }
     if (pos >= 52) return (pos - 52) + d <= 5;
+
+    const destRel = (pos + d) % CELL_COUNT;
+    const destAbs = (SP[pi] + destRel) % CELL_COUNT;
+    if (this.hasOpponentBlockade(pi, destAbs)) return false;
+
     return true;
   }
 
@@ -313,14 +341,20 @@ export class LudoGame {
     for (let oi = 0; oi < this.pc; oi++) {
       if (oi === pi) continue;
       const op = this.pl[oi];
+      let count = 0;
+      const indices: number[] = [];
       for (let oti = 0; oti < 4; oti++) {
         const opos = op.tokens[oti];
-        if (opos < 0 || opos >= 52) continue;
-        if ((SP[oi] + opos) % CELL_COUNT === abs) {
-          op.tokens[oti] = -1;
-          this.log(`💥 ${C[pi].name} captures ${C[oi].name}!`);
-          captured = true;
+        if (opos >= 0 && opos < 52 && (SP[oi] + opos) % CELL_COUNT === abs) {
+          count++;
+          indices.push(oti);
         }
+      }
+      if (count >= 2) continue;
+      if (count === 1) {
+        op.tokens[indices[0]] = -1;
+        this.log(`💥 ${C[pi].name} captures ${C[oi].name}!`);
+        captured = true;
       }
     }
     return captured;
@@ -374,6 +408,7 @@ export class LudoGame {
       if (this.over) { this.onEnd(); return; }
       if (this.dice === 6 || captured) {
         this.log(captured ? 'Capture bonus roll!' : 'Bonus roll!');
+        if (this.callbacks.onBonusRoll) this.callbacks.onBonusRoll();
         this.callbacks.onRollButtonState('🎲 Roll Dice', false);
       } else {
         setTimeout(() => this.endTurn(), 350);
@@ -419,6 +454,7 @@ export class LudoGame {
         this.updateUI();
         if (this.over) { this.onEnd(); return; }
         if (this.dice === 6 || captured) {
+          if (this.callbacks.onBonusRoll) this.callbacks.onBonusRoll();
           setTimeout(() => this.doAI(), 600);
         } else {
           setTimeout(() => this.endTurn(), 300);
@@ -683,15 +719,70 @@ export class LudoGame {
     const t = this.frame;
     const cs = this.cs;
 
+    // Build position groups for stacking offsets
+    const groups = new Map<string, {pi: number; ti: number}[]>();
+    for (let pi = 0; pi < this.pc; pi++) {
+      for (let ti = 0; ti < 4; ti++) {
+        if (this.pl[pi].tokens[ti] === 57) continue;
+        if (this.an.on && this.an.pi === pi && this.an.ti === ti) continue;
+        const pos = this.pl[pi].tokens[ti];
+        let key: string;
+        if (pos === -1) {
+          key = `home-${pi}-${ti}`;
+        } else if (pos >= 52) {
+          key = `hs-${pi}-${pos}`;
+        } else {
+          key = `tk-${(SP[pi] + pos) % CELL_COUNT}`;
+        }
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push({pi, ti});
+      }
+    }
+
+    const getOffset = (key: string, idx: number): Point => {
+      const group = groups.get(key);
+      if (!group || group.length <= 1) return {x: 0, y: 0};
+      const off = cs * 0.13;
+      if (group.length === 2) return idx === 0 ? {x: -off, y: 0} : {x: off, y: 0};
+      if (group.length === 3) return idx === 0 ? {x: -off, y: -off * 0.5} : idx === 1 ? {x: off, y: -off * 0.5} : {x: 0, y: off * 0.7};
+      return idx === 0 ? {x: -off, y: -off * 0.5} : idx === 1 ? {x: off, y: -off * 0.5} : idx === 2 ? {x: -off, y: off * 0.5} : {x: off, y: off * 0.5};
+    };
+
+    const groupIdx = new Map<string, number>();
+
     for (let pi = 0; pi < this.pc; pi++) {
       const p = this.pl[pi];
       const c = C[pi];
 
       for (let ti = 0; ti < 4; ti++) {
-        if (p.tokens[ti] === 57) continue; // finished tokens not drawn (absorbed into center)
+        if (p.tokens[ti] === 57) continue;
 
         const pos = this.tokenPix(pi, ti);
         const r = cs * 0.28;
+
+        // Compute stacking offset
+        const tokenPos = this.pl[pi].tokens[ti];
+        let key: string;
+        if (this.an.on && this.an.pi === pi && this.an.ti === ti) {
+          key = 'animating';
+        } else if (tokenPos === -1) {
+          key = `home-${pi}-${ti}`;
+        } else if (tokenPos >= 52) {
+          key = `hs-${pi}-${tokenPos}`;
+        } else {
+          key = `tk-${(SP[pi] + tokenPos) % CELL_COUNT}`;
+        }
+
+        if (!groupIdx.has(key)) groupIdx.set(key, 0);
+        const idx = groupIdx.get(key)!;
+        groupIdx.set(key, idx + 1);
+
+        const offset = (this.an.on && this.an.pi === pi && this.an.ti === ti)
+          ? {x: 0, y: 0}
+          : getOffset(key, idx);
+
+        const dx = pos.x + offset.x;
+        const dy = pos.y + offset.y;
         const isCurrentPlayer = pi === this.cur && !p.done;
         const isMovable = pi === 0 && this.movableTokens.includes(ti) && !this.an.on;
 
@@ -699,60 +790,69 @@ export class LudoGame {
         if (isMovable) {
           const pulse = Math.sin(t * 0.1) * 0.5 + 0.5;
           const glowR = r + 5 + pulse * 4;
-          const grd = ctx.createRadialGradient(pos.x, pos.y, r * 0.5, pos.x, pos.y, glowR);
+          const grd = ctx.createRadialGradient(dx, dy, r * 0.5, dx, dy, glowR);
           grd.addColorStop(0, `rgba(255,255,100,${0.5 + pulse * 0.4})`);
           grd.addColorStop(1, 'rgba(255,255,0,0)');
           ctx.fillStyle = grd;
           ctx.beginPath();
-          ctx.arc(pos.x, pos.y, glowR, 0, Math.PI * 2);
+          ctx.arc(dx, dy, glowR, 0, Math.PI * 2);
           ctx.fill();
         } else if (isCurrentPlayer && !this.an.on && !this.moving) {
-          // Subtle glow for current player tokens (not yet in selection mode)
           const pulse = Math.sin(t * 0.05) * 0.5 + 0.5;
           const glowR = r + 3 + pulse * 2;
-          const grd = ctx.createRadialGradient(pos.x, pos.y, r, pos.x, pos.y, glowR);
+          const grd = ctx.createRadialGradient(dx, dy, r, dx, dy, glowR);
           grd.addColorStop(0, `rgba(255,255,255,${0.2 + pulse * 0.2})`);
           grd.addColorStop(1, 'rgba(255,255,255,0)');
           ctx.fillStyle = grd;
           ctx.beginPath();
-          ctx.arc(pos.x, pos.y, glowR, 0, Math.PI * 2);
+          ctx.arc(dx, dy, glowR, 0, Math.PI * 2);
           ctx.fill();
         }
 
+        // Blockade indicator: ring around 2+ same-color tokens on same cell
+        const group = groups.get(key);
+        if (group && group.length >= 2 && group.every(m => m.pi === pi)) {
+          ctx.beginPath();
+          ctx.arc(dx, dy, r + 2, 0, Math.PI * 2);
+          ctx.strokeStyle = '#ffd70088';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
         // Shadow
-        this.circle(ctx, pos.x + 1.5, pos.y + 2, r, 'rgba(0,0,0,0.45)');
+        this.circle(ctx, dx + 1.5, dy + 2, r, 'rgba(0,0,0,0.45)');
 
         // Body
-        this.circle(ctx, pos.x, pos.y, r, c.bg);
+        this.circle(ctx, dx, dy, r, c.bg);
 
         // Gradient highlight
-        const hgrd = ctx.createRadialGradient(pos.x - r * 0.3, pos.y - r * 0.35, 0, pos.x, pos.y, r);
+        const hgrd = ctx.createRadialGradient(dx - r * 0.3, dy - r * 0.35, 0, dx, dy, r);
         hgrd.addColorStop(0, c.light);
         hgrd.addColorStop(0.55, c.bg);
         hgrd.addColorStop(1, c.dark);
         ctx.fillStyle = hgrd;
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
+        ctx.arc(dx, dy, r, 0, Math.PI * 2);
         ctx.fill();
 
         // Border
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
+        ctx.arc(dx, dy, r, 0, Math.PI * 2);
         ctx.strokeStyle = c.dark;
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
         // Specular highlight
-        this.circle(ctx, pos.x - r * 0.3, pos.y - r * 0.32, r * 0.22, 'rgba(255,255,255,0.4)');
+        this.circle(ctx, dx - r * 0.3, dy - r * 0.32, r * 0.22, 'rgba(255,255,255,0.4)');
 
-        // Token label: player letter + token number
+        // Token label
         ctx.fillStyle = '#fff';
         const fontSize = Math.max(7, Math.floor(r * 0.75));
         ctx.font = `bold ${fontSize}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const label = pi === 0 ? `U${ti + 1}` : `${c.name[0]}${ti + 1}`;
-        ctx.fillText(label, pos.x, pos.y + 0.5);
+        ctx.fillText(label, dx, dy + 0.5);
 
         // Tap hint for movable tokens
         if (isMovable) {
@@ -761,7 +861,7 @@ export class LudoGame {
           ctx.font = `bold ${Math.floor(cs * 0.22)}px sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('▲', pos.x, pos.y - r - cs * 0.18);
+          ctx.fillText('▲', dx, dy - r - cs * 0.18);
         }
       }
     }

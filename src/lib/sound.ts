@@ -40,6 +40,7 @@ class SoundManager {
   capture = () => { this.tone(110, "sawtooth", 0.25, 0.12); this.tone(82, "square", 0.25, 0.1, 0.04); };
   winFanfare = () => { [392, 523, 659, 784].forEach((f, i) => this.tone(f, "triangle", 0.35, 0.12, i * 0.12)); this.tone(98, "square", 0.5, 0.15, 0.5); };
   loseSound = () => { this.tone(330, "sine", 0.25, 0.08); this.tone(262, "sine", 0.25, 0.08, 0.15); this.tone(196, "sine", 0.4, 0.08, 0.3); };
+  bonusRoll = () => { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, "sine", 0.12, 0.1, i * 0.06)); this.tone(1318, "triangle", 0.25, 0.08, 0.25); };
   buttonClick = () => { this.tone(660, "sine", 0.04, 0.05); };
   toastSound = (type: "success" | "error" | "info") => { const f = type === "success" ? 660 : type === "error" ? 165 : 494; this.tone(f, "sine", 0.12, 0.06); };
 
