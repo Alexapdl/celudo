@@ -1,8 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { TrendingUp, Wallet } from "lucide-react";
-import { soundManager } from "@/lib/sound";
+import { TrendingUp, Wallet, Lock } from "lucide-react";
 
 interface StakingScreenProps {
   effectiveAPY: number; baseAPY: number; currentTierBoost: number; currentTierName: string;
@@ -20,9 +19,17 @@ const tiers = [
   { name: "Legend", min: 50000, boost: 5.0, perk: "Revenue share" },
 ];
 
-export default function StakingScreen({ effectiveAPY, baseAPY, currentTierBoost, currentTierName, stakedBalance, earnedYield, stakeAmount, unstakeAmount, onSetStakeAmount, onSetUnstakeAmount, onStake, onUnstake }: StakingScreenProps) {
+export default function StakingScreen({ effectiveAPY, baseAPY, currentTierBoost, currentTierName, stakedBalance, earnedYield, stakeAmount, unstakeAmount, onSetStakeAmount, onSetUnstakeAmount }: StakingScreenProps) {
   return (
-    <div className="container">
+    <div className="container relative">
+      <div className="coming-soon-overlay">
+        <div className="coming-soon-badge">
+          <Lock size={18} />
+          <span>Coming Soon</span>
+        </div>
+        <p className="coming-soon-text">DeFi yield integration is under development. Stake cUSD to earn real yield boosted by your game tier.</p>
+      </div>
+
       <h2 className="page-title">Staking</h2>
 
       <div className="staking-overview">
@@ -46,15 +53,15 @@ export default function StakingScreen({ effectiveAPY, baseAPY, currentTierBoost,
         <div className="stake-action-card">
           <h3><TrendingUp size={14} style={{ display: "inline", marginRight: 6 }} />Stake</h3>
           <div className="input-group">
-            <input type="number" value={stakeAmount} onChange={(e) => onSetStakeAmount(e.target.value)} placeholder="Amount (cUSD)" min="0" step="0.01" />
-            <button className="btn btn-primary" onClick={() => { soundManager.buttonClick(); onStake(); }}>Stake</button>
+            <input type="number" value={stakeAmount} onChange={(e) => onSetStakeAmount(e.target.value)} placeholder="Amount (cUSD)" min="0" step="0.01" disabled />
+            <button className="btn btn-primary" disabled>Stake</button>
           </div>
         </div>
         <div className="stake-action-card">
           <h3><Wallet size={14} style={{ display: "inline", marginRight: 6 }} />Unstake</h3>
           <div className="input-group">
-            <input type="number" value={unstakeAmount} onChange={(e) => onSetUnstakeAmount(e.target.value)} placeholder="Amount (cUSD)" min="0" step="0.01" />
-            <button className="btn btn-secondary" onClick={() => { soundManager.buttonClick(); onUnstake(); }}>Unstake</button>
+            <input type="number" value={unstakeAmount} onChange={(e) => onSetUnstakeAmount(e.target.value)} placeholder="Amount (cUSD)" min="0" step="0.01" disabled />
+            <button className="btn btn-secondary" disabled>Unstake</button>
           </div>
         </div>
       </div>
