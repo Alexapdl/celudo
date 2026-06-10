@@ -113,6 +113,9 @@ export function useGameController(
         setRollButtonText(text);
         setRollButtonDisabled(disabled);
       },
+      onBonusRoll: () => {
+        soundManager.bonusRoll();
+      },
       onGameOver: (winnerIdx, isHuman) => {
         const pCount = activePlayerCount;
         const mode = gameMode;
